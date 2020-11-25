@@ -1,4 +1,5 @@
 import Foundation
+// import SwiftLoggerClient
 
 public class TimeSeriesWindow : TermWindow {
     public enum TimeSeriesStyle {
@@ -6,21 +7,219 @@ public class TimeSeriesWindow : TermWindow {
         case line
         case dot
     }
+    public enum TimeSeriesColorScheme {
+        case monochrome(TermColor)
+        case quarters(TermColor,TermColor,TermColor,TermColor)
+        case quartiles(TermColor,TermColor,TermColor,TermColor)
+    }
     
     var totalTime : TimeInterval
     var timeTick : TimeInterval
     var timeCount : Int { Int(ceil(totalTime/timeTick)) }
     
-    var seriesColor : TermColor = .red
-    var seriesStyle : TimeSeriesStyle = .block
+    public var maxValue : Double?
+    public var seriesColor : TimeSeriesColorScheme = .monochrome(.red) {
+        didSet {
+            computeRowStyles()
+        }
+    }
+    public var seriesStyle : TimeSeriesStyle = .block {
+        didSet {
+            computeRowStyles()
+        }
+    }
+    
     var values : [Double]
+    var sourceTimer : Timer?
     var sourceBlock : ()->Double
     
-    init(tick: TimeInterval, total: TimeInterval, source: @escaping ()->Double) {
+    var rowStyles : [(color: TermColor, styles:[TermStyle])]
+    
+    override func colsDidChange() {
+        super.colsDidChange()
+        computeRowStyles()
+    }
+    
+    func computeRowStyles() {
+        rowStyles = [(color: TermColor, styles:[TermStyle])](repeating: (.default, [.default]), count: rows-2)
+        
+        // precompute quartiles if necessary
+        let low : Double
+        let mid : Double
+        let high : Double
+        let rowHeight : Double
+        switch seriesColor {
+        case .quartiles(_, _, _, _):
+            var maxHeight = ceil(maxValue ?? self.values.max() ?? 1)
+            if maxHeight == 0 { maxHeight = 1 }
+            rowHeight = maxHeight / Double(rows-2)
+            let sorted = values.sorted().map({ ($0 * Double(rows-2)) / maxHeight})
+            low = sorted[sorted.count/4]
+            mid = sorted[sorted.count/2]
+            high = sorted[(3*sorted.count)/4]
+        default:
+            low = 0
+            mid = 0
+            high = 0
+            rowHeight = 0
+        }
+        for i in 0..<rowStyles.count {
+            switch seriesColor {
+            case .monochrome(let c):
+                rowStyles[i].color = c
+                if seriesStyle == .block {
+                    rowStyles[i].styles = [.swap, .hide]
+                } else {
+                    rowStyles[i].styles = [.bold]
+                }
+            case .quarters(let q1, let q2, let q3, let q4):
+                if i < (rows-2)/4 {
+                    rowStyles[i].color = q1
+                } else if i < (rows-2)/2 {
+                    rowStyles[i].color = q2
+                } else if i < 3*(rows-2)/4 {
+                    rowStyles[i].color = q3
+                } else {
+                    rowStyles[i].color = q4
+                }
+                if seriesStyle == .block {
+                    rowStyles[i].styles = [.swap, .hide]
+                } else {
+                    rowStyles[i].styles = [.bold]
+                }
+            case .quartiles(let q1, let q2, let q3, let q4):
+                if Double(i) < low {
+                    rowStyles[i].color = q1
+                } else if Double(i) < mid {
+                    rowStyles[i].color = q2
+                } else if Double(i) < high {
+                    rowStyles[i].color = q3
+                } else {
+                    rowStyles[i].color = q4
+                }
+                if seriesStyle == .block {
+                    rowStyles[i].styles = [.swap, .hide]
+                } else {
+                    rowStyles[i].styles = [.bold]
+                }
+                break
+            }
+        }
+    }
+    
+    public init(tick: TimeInterval, total: TimeInterval, source: @escaping ()->Double) {
         totalTime = total
         timeTick = tick
         sourceBlock = source
         values = [Double](repeating: 0, count: Int(ceil(totalTime/timeTick)))
+        rowStyles = []
+        defer {
+            computeRowStyles()
+        }
+        
         super.init()
+    }
+    
+    public func start() {
+        sourceTimer = Timer.scheduledTimer(withTimeInterval: timeTick, repeats: true, block: { (timer) in
+            self.values.append(self.sourceBlock())
+            while self.values.count > self.timeCount {
+                self.values.remove(at: 0)
+            }
+            self.display()
+        })
+    }
+    
+    public func stop() {
+        sourceTimer?.invalidate()
+        sourceTimer = nil
+    }
+    
+    func display() {
+        clearScreen()
+        // calculate max value
+        let maxHeight = ceil(maxValue ?? self.values.max() ?? 1)
+        var conversionFactor = Double(rows-2) / maxHeight
+        if conversionFactor.isNaN || conversionFactor.isInfinite { conversionFactor = 1 }
+        // draw axises
+        // TODO
+        // map timecount items in cols bins
+        var heldValues = [(x: Double, y: Double)]()
+        for x in 0..<timeCount {
+            heldValues.append((Double(x+1)*timeTick, values[x]))
+        }
+        var timeCols = [Double]()
+        let start = heldValues[0].x
+        timeCols.append(start)
+        let timeColStep = totalTime/Double(cols-1)
+        for c in 1..<cols-3 {
+            timeCols.append(start+Double(c)*timeColStep)
+        }
+        timeCols.append(heldValues[heldValues.count-1].x)
+        let mapping = TimeSeriesWindow.mapDomains(heldValues, to: timeCols).map({ ($0.x,$0.y.isNaN ? 0 : $0.y*conversionFactor) })
+        
+        // if we are using quartiles, recompute
+        switch seriesColor {
+        case .quartiles(_, _, _, _):
+            computeRowStyles()
+        default:
+            break
+        }
+        
+        // draw the columns
+        requestStyledBuffer { buffer in
+            for rowIdx in 0..<buffer.count {
+                for colIdx in 0..<buffer[0].count {
+                    let val = Int(mapping[colIdx].1)
+                    if val >= rowIdx {
+                        buffer[buffer.count-rowIdx-1][colIdx] = TermCharacter(".", color: rowStyles[rowIdx].color, styles: rowStyles[rowIdx].styles)
+                    }
+                }
+            }
+        }
+    }
+    
+    static func getLineParameters(point1: (x: Double, y:Double), point2: (x: Double, y:Double)) -> (a: Double, b: Double, c: Double) {
+        let a = point1.y - point2.y
+        let b = point2.x - point1.x
+        let c = ((-b)*point1.y) + ((-a)*point1.x) // eeeeeeeet oui
+        return (a,b,c)
+    }
+
+    static func mapDomains(_ points: [(x: Double, y:Double)], to: [Double]) -> [(x: Double, y:Double)] {
+        // just in case
+        let to = to.sorted()
+        let minX = to.min() ?? 0
+        let maxX = to.max() ?? 1
+        let points = points.filter {
+            $0.x >= minX && $0.x <= maxX
+        }
+        
+        var result = [(x: Double, y:Double)]()
+        for x in to {
+            // bracket then compute
+            let before = points.firstIndex(where: { $0.x > x })
+            let after = points.lastIndex(where: { $0.x < x })
+            if let before = before, let after = after {
+                let bIdx = max(0,before - 1)
+                let aIdx = min(points.count-1, after + 1)
+                if bIdx == aIdx { result.append(points[bIdx]) }
+                else {
+                    let (a,b,c) = getLineParameters(point1: points[bIdx], point2: points[aIdx])
+                    let y = (-a/b)*x - (c/b)
+                    result.append((x,y))
+                }
+            } else if let after = after {
+                // straight
+                result.append((x,points[min(points.count-1, after + 1)].y))
+            } else if let before = before {
+                // straight
+                result.append((x,points[max(0,before - 1)].y))
+            } else {
+                result.append((x,0))
+            }
+        }
+        
+        return result
     }
 }

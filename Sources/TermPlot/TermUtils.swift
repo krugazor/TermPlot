@@ -62,9 +62,13 @@ public class TermHandler {
     
     init() {
         let(c,r) = TermSize2()
-        cols = c
-        rows = r
-        
+        if c == 0 && r == 0 { // debug weirdness
+            cols = 80
+            rows = 24
+        } else {
+            cols = c
+            rows = r
+        }
         _ = signal(SIGWINCH, signalHandler)
     }
     

@@ -136,3 +136,17 @@ func doDemo() {
     
     RunLoop.current.run(until: Date.distantFuture)
 }
+
+func doSeriesDemo() {
+    var v = 0
+    let series = TimeSeriesWindow(tick: 0.25, total: 8) {
+        v += 1
+        v = v % 10
+        let random = Int.random(in: 0...v)
+        return Double(random)
+    }
+    series.seriesColor = .monochrome(.light_cyan)
+
+    series.start()
+    RunLoop.current.run(until: Date.distantFuture)
+}

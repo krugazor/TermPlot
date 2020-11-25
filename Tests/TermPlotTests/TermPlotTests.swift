@@ -85,6 +85,12 @@ final class TermPlotTests: XCTestCase {
         TermHandler.shared.set(TermColor.default, style: .default)
         TermHandler.shared.put(s: "\n")
     }
+    func testMapping() {
+        let measures : [(Double,Double)] = [(1.0,5.0), (2.66,8), (4.5,5), (6.33, 6), (8,10)]
+        let ticks : [Double] = [1,2,3,4,5,6,7,8]
+         let mapping = TimeSeriesWindow.mapDomains(measures, to: ticks)
+        print(mapping)
+    }
 
     static var allTests = [
         ("testColors", testColors),

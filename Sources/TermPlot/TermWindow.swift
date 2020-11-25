@@ -30,15 +30,28 @@ public class TermWindow {
     fileprivate var screenLock : NSLock = NSLock()
     fileprivate var originalSettings : termios?
     fileprivate var setup = false // until we do anything, no need to reserve space
-    public private(set) var rows: Int
-    public private(set) var cols: Int
+    public private(set) var rows: Int {
+        didSet {
+            rowsDidChange()
+        }
+    }
+    public private(set) var cols: Int {
+        didSet {
+            colsDidChange()
+        }
+    }
     fileprivate var currentBox : (cols: Int, rows: Int) = (0,0) // ditto
     fileprivate var cursorPosition : (x: Int, y: Int) = (0,0)
     
+    func rowsDidChange() {
+        // for override purposes
+    }
+    
+    func colsDidChange() {
+        // for override purposes
+    }
+    
     init() {
-        //        #warning("remove")
-        //        SwiftLogger.setupForHTTP(URL(string: "http://localhost:8080")!, appName: "TermPlot")
-        
         rows = TermHandler.shared.rows
         cols = TermHandler.shared.cols
         
@@ -46,7 +59,6 @@ public class TermWindow {
         TermHandler.shared.windowResizedAction = { thndlr in
             self.rows = TermHandler.shared.rows
             self.cols = TermHandler.shared.cols
-            self.boxScreen()
         }
     }
     
@@ -89,7 +101,19 @@ public class TermWindow {
         
         if var set = originalSettings {
             tcsetattr(STDOUT_FILENO, TCSAFLUSH, &set)
+        } else {
+            // restore echo
+            var stermios = termios()
+            tcgetattr(STDOUT_FILENO, &stermios)
+            #if os(Linux)
+            let newcflags : UInt32 = stermios.c_lflag | UInt32(ECHO)
+            #else
+            let newcflags : UInt = stermios.c_lflag | UInt(ECHO)
+            #endif
+            stermios.c_lflag = newcflags
+            tcsetattr(STDOUT_FILENO, TCSAFLUSH, &stermios)
         }
+        stdout("exiting\n".apply(.default, styles: [.default]))
     }
     
     public func moveCursorRight(_ amount: Int) {
@@ -140,39 +164,60 @@ public class TermWindow {
         for _ in 1...cols { stdout(DisplaySymbol.horz_top.withStyle(.line)) }
     }
     
-    public func requestBuffer(_ handler: (inout [[Character]])->Void) {
-        var buffer = [[Character]](repeating: [Character](repeating: " ", count: cols-2), count: rows-2)
-        handler(&buffer)
-        
-        boxScreen()
-        
-        TermHandler.shared.moveCursor(toX: 2, y: 2)
-        var crow = 2
+    func draw(_ buffer: [[Character]], offset: (Int,Int) = (0,0)) {
+        TermHandler.shared.moveCursor(toX: offset.0, y: offset.1)
+        var crow = offset.1+1
         for row in buffer {
             for char in row {
                 stdout(String(char))
             }
             crow += 1
-            TermHandler.shared.moveCursor(toX: 2, y: crow)
-       }
+            TermHandler.shared.moveCursor(toX: offset.0+1, y: crow)
+        }
     }
     
-    public func requestStyledBuffer(_ handler: (inout [[TermCharacter]])->Void) {
-        var buffer = [[TermCharacter]](repeating: [TermCharacter](repeating: TermCharacter(), count: cols-2), count: rows-2)
-        handler(&buffer)
-        
-        boxScreen()
-        
-        TermHandler.shared.moveCursor(toX: 2, y: 2)
-        var crow = 2
+    func draw(_ buffer: [[TermCharacter]], offset: (Int,Int) = (0,0)) {
+        TermHandler.shared.moveCursor(toX: 1+offset.0, y: 1+offset.1)
+        var crow = offset.1+1
         for row in buffer {
             for char in row {
                 TermHandler.shared.set(char.color, styles: char.styles)
                 stdout(String(char.char))
             }
             crow += 1
-            TermHandler.shared.moveCursor(toX: 2, y: crow)
-       }
+            TermHandler.shared.moveCursor(toX: offset.0+1, y: crow)
+        }
+    }
+    
+    public func requestBuffer(box: Bool = true, _ handler: (inout [[Character]])->Void) {
+        if box {
+            var buffer = [[Character]](repeating: [Character](repeating: " ", count: cols-2), count: rows-2)
+            handler(&buffer)
+            
+            boxScreen()
+            
+            draw(buffer, offset: (1,1))
+        } else {
+            var buffer = [[Character]](repeating: [Character](repeating: " ", count: cols), count: rows)
+            handler(&buffer)
+
+            draw(buffer)
+        }
+    }
+    
+    public func requestStyledBuffer(box: Bool = true, _ handler: (inout [[TermCharacter]])->Void) {
+        if box {
+            var buffer = [[TermCharacter]](repeating: [TermCharacter](repeating: TermCharacter(), count: cols-2), count: rows-2)
+            handler(&buffer)
+            
+            boxScreen()
+            draw(buffer, offset: (1,1))
+        } else {
+            var buffer = [[TermCharacter]](repeating: [TermCharacter](repeating: TermCharacter(), count: cols), count: rows)
+            handler(&buffer)
+
+            draw(buffer)
+        }
     }
 
 }
