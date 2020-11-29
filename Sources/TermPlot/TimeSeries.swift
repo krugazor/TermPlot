@@ -152,7 +152,7 @@ public class TimeSeriesWindow : TermWindow {
         let start = heldValues[0].x
         timeCols.append(start)
         let timeColStep = totalTime/Double(cols-1)
-        for c in 1..<cols-3 {
+        for c in 1..<cols-2 {
             timeCols.append(start+Double(c)*timeColStep)
         }
         timeCols.append(heldValues[heldValues.count-1].x)
@@ -166,13 +166,62 @@ public class TimeSeriesWindow : TermWindow {
             break
         }
         
-        // draw the columns
-        requestStyledBuffer { buffer in
-            for rowIdx in 0..<buffer.count {
+        if seriesStyle == .block {
+            // draw the columns
+            requestStyledBuffer { buffer in
+                for rowIdx in 0..<buffer.count {
+                    for colIdx in 0..<buffer[0].count {
+                        let val = Int(mapping[colIdx].1)
+                        if val >= rowIdx {
+                            buffer[buffer.count-rowIdx-1][colIdx] = TermCharacter(".", color: rowStyles[rowIdx].color, styles: rowStyles[rowIdx].styles)
+                        }
+                    }
+                }
+            }
+        } else if seriesStyle == .dot {
+            // compute dot position
+            let dotHeight = mapping.map { (col,val) -> Int in
+                return Int(round(val))
+            }
+            requestStyledBuffer { buffer in
                 for colIdx in 0..<buffer[0].count {
-                    let val = Int(mapping[colIdx].1)
-                    if val >= rowIdx {
-                        buffer[buffer.count-rowIdx-1][colIdx] = TermCharacter(".", color: rowStyles[rowIdx].color, styles: rowStyles[rowIdx].styles)
+                    let dotPosition = dotHeight[colIdx]
+                    if dotPosition < buffer.count {
+                        buffer[buffer.count-dotPosition-1][colIdx] = TermCharacter(DisplaySymbol.point.cWithStyle(.dots), color: rowStyles[dotPosition].color, styles: rowStyles[dotPosition].styles)
+                    }
+                }
+            }
+        } else if seriesStyle == .line {
+            // that's the complicated one, the line has to appear kind of continuous
+            // compute dot position
+            let dotHeight = mapping.map { (col,val) -> Int in
+                return Int(round(val))
+            }
+            requestStyledBuffer { buffer in
+                for colIdx in 0..<buffer[0].count {
+                    let dotPosition = min(max(dotHeight[colIdx],0), buffer.count-1)
+                    if colIdx == 0 || colIdx+1 == buffer[0].count {
+                        // begin and end with a flat
+                        buffer[buffer.count-dotPosition-1][colIdx] = TermCharacter(DisplaySymbol.horz_top.cWithStyle(.line), color: rowStyles[dotPosition].color, styles: rowStyles[dotPosition].styles)
+                    } else {
+                        let nextPos = min(max(dotHeight[colIdx+1],0), buffer.count-1)
+                        if nextPos == dotPosition {
+                            buffer[buffer.count-dotPosition-1][colIdx] = TermCharacter(DisplaySymbol.horz_top.cWithStyle(.line), color: rowStyles[dotPosition].color, styles: rowStyles[dotPosition].styles)
+                        } else if nextPos > dotPosition {
+                            // make a connection
+                            buffer[buffer.count-dotPosition-1][colIdx] = TermCharacter(DisplaySymbol.bot_right.cWithStyle(.line), color: rowStyles[dotPosition].color, styles: rowStyles[dotPosition].styles)
+                            for i in (dotPosition+1)..<nextPos {
+                                buffer[buffer.count-i-1][colIdx] = TermCharacter(DisplaySymbol.vert_right.cWithStyle(.line), color: rowStyles[dotPosition].color, styles: rowStyles[dotPosition].styles)
+                            }
+                            buffer[buffer.count-nextPos-1][colIdx] = TermCharacter(DisplaySymbol.top_left.cWithStyle(.line), color: rowStyles[dotPosition].color, styles: rowStyles[dotPosition].styles)
+                       } else if nextPos < dotPosition {
+                        // make a connection
+                        buffer[buffer.count-dotPosition-1][colIdx] = TermCharacter(DisplaySymbol.top_right.cWithStyle(.line), color: rowStyles[dotPosition].color, styles: rowStyles[dotPosition].styles)
+                        for i in (nextPos+1)..<dotPosition {
+                            buffer[buffer.count-i-1][colIdx] = TermCharacter(DisplaySymbol.vert_right.cWithStyle(.line), color: rowStyles[dotPosition].color, styles: rowStyles[dotPosition].styles)
+                        }
+                        buffer[buffer.count-nextPos-1][colIdx] = TermCharacter(DisplaySymbol.bot_left.cWithStyle(.line), color: rowStyles[dotPosition].color, styles: rowStyles[dotPosition].styles)
+                       }
                     }
                 }
             }

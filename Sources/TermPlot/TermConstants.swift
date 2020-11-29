@@ -70,6 +70,7 @@ var line : [String:String] = [
     "top_left" : "┌",
     "bot_right" : "┘",
     "tick_right" : "┤",
+    "tick_left" : "├",
 ]
 
 var heavyline : [String:String] = [
@@ -83,7 +84,8 @@ var heavyline : [String:String] = [
     "top_right" : "┓",
     "top_left" : "┏",
     "bot_right" : "┛",
-    "tick_right": "┫"
+    "tick_right": "┫",
+    "tick_left" : "┣",
 ]
 
 var dots : [String:String] = [
@@ -127,7 +129,8 @@ public enum DisplaySymbol : String, CaseIterable {
     case top_left
     case bot_right
     case tick_right
-    
+    case tick_left
+
     public func withStyle(_ s: DisplayStyle) -> String {
         let style : [String:String]
         switch(s) {
@@ -147,4 +150,26 @@ public enum DisplaySymbol : String, CaseIterable {
         
         return style[self.rawValue] ?? style[DisplaySymbol.empty.rawValue]!
     }
+    
+    public func cWithStyle(_ s: DisplayStyle) -> Character {
+        let style : [String:String]
+        switch(s) {
+        case .line:
+            style = line
+        case .heavyline:
+            style = heavyline
+        case .dots:
+            style = dots
+        case .crosses:
+            style = crosses
+        case .pluses:
+            style = pluses
+        case .stars:
+            style = stars
+        }
+        
+        let str = style[self.rawValue] ?? style[DisplaySymbol.empty.rawValue]!
+        return str.first!
+    }
+
 }

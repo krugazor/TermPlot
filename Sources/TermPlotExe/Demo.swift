@@ -138,7 +138,7 @@ func doDemo() {
 }
 
 func doSeriesDemo() {
-    var v = 0
+    var v = 1
     let series = TimeSeriesWindow(tick: 0.25, total: 8) {
         v += 1
         v = v % 10
@@ -147,6 +147,22 @@ func doSeriesDemo() {
     }
     series.seriesColor = .monochrome(.light_cyan)
 
+    let switchTimer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { (timer) in
+        let next : TimeSeriesWindow.TimeSeriesStyle
+        switch series.seriesStyle {
+        case .block:
+            next = .line
+            series.seriesColor = .monochrome(.light_red)
+        case .line:
+            next = .dot
+            series.seriesColor = .monochrome(.light_yellow)
+       case .dot:
+            next = .block
+            series.seriesColor = .monochrome(.light_cyan)
+        }
+        series.seriesStyle = next
+    }
+    
     series.start()
     RunLoop.current.run(until: Date.distantFuture)
 }
