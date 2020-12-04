@@ -1,7 +1,7 @@
 import Foundation
 
 public class StandardSeriesWindow : TermWindow {
-    public enum StandardSeriesStyle {
+    public enum StandardSeriesStyle : String, CaseIterable {
         case block
         case line
         case dot

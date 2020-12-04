@@ -17,7 +17,9 @@ import ArgumentParser
 //RunLoop.current.run(until: Date.distantFuture)
 
 extension TermColor : ExpressibleByArgument {
-    
+}
+
+extension StandardSeriesWindow.StandardSeriesStyle : ExpressibleByArgument {
 }
 
 struct TermPlot : ParsableCommand {
@@ -69,7 +71,10 @@ struct TermPlot : ParsableCommand {
     })
     var pColors: [TermColor]?
     
-    @Flag(name: .long, help: "Should continue monitoring input for changes. By default, the program exits at the EOF")
+    @Option(name: .shortAndLong, help: "Style of the graph (supported values: \(StandardSeriesWindow.StandardSeriesStyle.allCases)")
+    var style : StandardSeriesWindow.StandardSeriesStyle?
+    
+    @Flag(name: .long, help: "Should continue monitoring input for changes. By default, the program does not update anymore at the EOF")
     var live = false
     
     mutating func run() throws {
@@ -81,15 +86,61 @@ struct TermPlot : ParsableCommand {
             return
         }
         
+        let colorArgs : [Any?] = [mColor,qColors,pColors]
+        if colorArgs.compactMap({ $0 }).count > 1 {
+            print("Only one color scheme is allowed, please choose bewteen monochromatic, quarters, or percentage quartiles")
+            Foundation.exit(-1)
+        }
+        
+        let winStyle : StandardSeriesWindow.StandardSeriesStyle
+        if let sty = style {
+            winStyle = sty
+        } else {
+            winStyle = .line
+        }
+        
+        let winColor : StandardSeriesWindow.StandardSeriesColorScheme
+        if let col = mColor {
+            winColor = .monochrome(col)
+        } else if var col = qColors {
+            if col.count == 4 {
+                winColor = .quarters(col[0], col[1], col[2], col[3])
+            } else { // complete the rest with random colors
+                while col.count < 4 {
+                    if let rcol = TermColor.allCases.randomElement(), !col.contains(rcol) {
+                        col.append(rcol)
+                    }
+                }
+                winColor = .quarters(col[0], col[1], col[2], col[3])
+            }
+        } else if var col = pColors {
+            if col.count == 4 {
+                winColor = .quartiles(col[0], col[1], col[2], col[3])
+            } else { // complete the rest with random colors
+                while col.count < 4 {
+                    if let rcol = TermColor.allCases.randomElement(), !col.contains(rcol) {
+                        col.append(rcol)
+                    }
+                }
+                winColor = .quartiles(col[0], col[1], col[2], col[3])
+            }
+        } else {
+            winColor = .monochrome(.light_red)
+        }
+        
         if live {
             if let file = file, let handle = FileHandle.init(forReadingAtPath: file) {
                 let (cols,_) = TermSize2()
                 let window = LiveSeriesWindow(tick: 1, total: Double(cols), input: handle)
+                window.seriesColor = winColor
+                window.seriesStyle = winStyle
                 window.start()
             } else {
                 // can stdin be anything but live?
                 let (cols,_) = TermSize2()
                 let window = LiveSeriesWindow(tick: 1, total: Double(cols), input: FileHandle.standardInput)
+                window.seriesColor = winColor
+                window.seriesStyle = winStyle
                 window.start()
             }
             RunLoop.current.run(until: Date.distantFuture)
@@ -100,7 +151,10 @@ struct TermPlot : ParsableCommand {
                     if !trimmed.isEmpty { return Double(trimmed) }
                     else { return nil }
                 })
-                let window = StandardSeriesWindow(tick: 1, total: Double(numbers.count))
+                let (cols,_) = TermSize2()
+                let window = StandardSeriesWindow(tick: 1, total: Double(cols))
+                window.seriesColor = winColor
+                window.seriesStyle = winStyle
                 // TODO: update on change
                 window.replaceValues(with: numbers)
                 window.start()
@@ -118,6 +172,8 @@ struct TermPlot : ParsableCommand {
                     else { return nil }
                 })
                 let window = StandardSeriesWindow(tick: 1, total: Double(numbers.count))
+                window.seriesColor = winColor
+                window.seriesStyle = winStyle
                 window.replaceValues(with: numbers)
                 window.start()
                 RunLoop.current.run(until: Date.distantFuture)
