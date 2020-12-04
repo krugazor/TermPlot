@@ -76,12 +76,14 @@ public class TermWindow {
         
         // restore when the program ends abruptly
         _ = signal(SIGINT) { sig in
-            TermWindow.default.restoreTTY()
-            exit(SIGINT)
+            TermWindow.default.restoreTTY {
+                exit(SIGINT)
+            }
         }
         _ = signal(SIGKILL) { sig in
-            TermWindow.default.restoreTTY()
-            exit(SIGKILL)
+            TermWindow.default.restoreTTY {
+                exit(SIGKILL)
+            }
         }
         
         stdout("\u{001B}[?1049h")
@@ -95,25 +97,37 @@ public class TermWindow {
         setup = true
     }
     
-    func restoreTTY() {
-        stdout(SHOW_CURSOR)
-        stdout("\u{001B}[?1049l")
-        
-        if var set = originalSettings {
-            tcsetattr(STDOUT_FILENO, TCSAFLUSH, &set)
-        } else {
-            // restore echo
-            var stermios = termios()
-            tcgetattr(STDOUT_FILENO, &stermios)
-            #if os(Linux)
-            let newcflags : UInt32 = stermios.c_lflag | UInt32(ECHO)
-            #else
-            let newcflags : UInt = stermios.c_lflag | UInt(ECHO)
-            #endif
-            stermios.c_lflag = newcflags
-            tcsetattr(STDOUT_FILENO, TCSAFLUSH, &stermios)
+    func restoreTTY(then: @escaping ()->()) {
+        DispatchQueue.global(qos: .background).async {
+            TermHandler.shared.lock()
+            stdout(SHOW_CURSOR)
+            stdout("\u{001B}[?1049l")
+            DispatchQueue.main.async {
+                if var set = self.originalSettings {
+                    #if os(Linux)
+                    let newcflags : UInt32 = set.c_lflag | UInt32(ECHO)
+                    #else
+                    let newcflags : UInt = set.c_lflag | UInt(ECHO)
+                    #endif
+                    set.c_lflag = newcflags
+                    tcsetattr(STDOUT_FILENO, TCSAFLUSH, &set)
+                } else {
+                    // restore echo
+                    var stermios = termios()
+                    tcgetattr(STDOUT_FILENO, &stermios)
+                    #if os(Linux)
+                    let newcflags : UInt32 = stermios.c_lflag | UInt32(ECHO)
+                    #else
+                    let newcflags : UInt = stermios.c_lflag | UInt(ECHO)
+                    #endif
+                    stermios.c_lflag = newcflags
+                    tcsetattr(STDOUT_FILENO, TCSAFLUSH, &stermios)
+                }
+ 
+                stdout("exiting\n".apply(.default, styles: [.default]))
+                then()
+            }
         }
-        stdout("exiting\n".apply(.default, styles: [.default]))
     }
     
     public func moveCursorRight(_ amount: Int) {
@@ -148,6 +162,7 @@ public class TermWindow {
     }
     
     public func boxScreen() {
+        TermHandler.shared.lock()
         TermHandler.shared.set(TermColor.default, style: TermStyle.default)
         clearScreen()
         
@@ -162,9 +177,12 @@ public class TermWindow {
         }
         TermHandler.shared.moveCursor(toX: 1, y: rows)
         for _ in 1...cols { stdout(DisplaySymbol.horz_top.withStyle(.line)) }
+        TermHandler.shared.set(.default, style: .default)
+        TermHandler.shared.unlock()
     }
     
     func draw(_ buffer: [[Character]], offset: (Int,Int) = (0,0)) {
+        TermHandler.shared.lock()
         TermHandler.shared.moveCursor(toX: offset.0, y: offset.1)
         var crow = offset.1+1
         for row in buffer {
@@ -174,9 +192,12 @@ public class TermWindow {
             crow += 1
             TermHandler.shared.moveCursor(toX: offset.0+1, y: crow)
         }
+        TermHandler.shared.set(.default, style: .default)
+        TermHandler.shared.unlock()
     }
     
     func draw(_ buffer: [[TermCharacter]], offset: (Int,Int) = (0,0)) {
+        TermHandler.shared.lock()
         TermHandler.shared.moveCursor(toX: 1+offset.0, y: 1+offset.1)
         var crow = offset.1+1
         for row in buffer {
@@ -187,6 +208,8 @@ public class TermWindow {
             crow += 1
             TermHandler.shared.moveCursor(toX: offset.0+1, y: crow)
         }
+        TermHandler.shared.set(.default, style: .default)
+        TermHandler.shared.unlock()
     }
     
     public func requestBuffer(box: Bool = true, _ handler: (inout [[Character]])->Void) {

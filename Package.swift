@@ -17,6 +17,7 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         // .package(url: /* package url */, from: "1.0.0"),
+        .package(name: "swift-argument-parser", url: "https://github.com/apple/swift-argument-parser", from: "0.3.0"),
         //.package(name: "SwiftLogger", url: "https://github.com/krugazor/SwiftLoggerServer", from: "1.1.1") // TODO: remove
     ],
     targets: [
@@ -25,8 +26,8 @@ let package = Package(
         .target(
             name: "TermPlot",
             dependencies:
-                []
-                // [.product(name: "SwiftLoggerClient", package: "SwiftLogger")]
+                [.product(name: "ArgumentParser", package: "swift-argument-parser")]
+                // [.product(name: "ArgumentParser", package: "swift-argument-parser"), .product(name: "SwiftLoggerClient", package: "SwiftLogger")]
         ),
         .target(
             name: "TermPlotExe",

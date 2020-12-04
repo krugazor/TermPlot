@@ -59,6 +59,7 @@ public class TermHandler {
     public fileprivate(set) var cols  = 80
     public fileprivate(set) var rows = 43
     var windowResizedAction : ((TermHandler)->Void)? // not the most elegant, but I cannot have labels on the arguments
+    var screenLock = NSLock()
     
     init() {
         let(c,r) = TermSize2()
@@ -109,50 +110,52 @@ public class TermHandler {
     }
     
     // MARK: utility functions
-    func moveCursorRight(_ amount: Int) {
+    public func moveCursorRight(_ amount: Int) {
         for _ in 0..<amount {
             stdout(TermControl.FORWARD.rawValue)
         }
     }
     
-    func moveCursorLeft(_ amount: Int) {
+    public func moveCursorLeft(_ amount: Int) {
         for _ in 0..<amount {
             stdout(TermControl.BACK.rawValue)
         }
     }
     
-    func moveCursorDown(_ amount: Int) {
+    public func moveCursorDown(_ amount: Int) {
         for _ in 0..<amount {
             stdout(TermControl.DOWN.rawValue)
         }
     }
     
-    func moveCursorUp(_ amount: Int) {
+    public func moveCursorUp(_ amount: Int) {
         for _ in 0..<amount {
             stdout(TermControl.UP.rawValue)
         }
     }
     
     // Warning! 1-based
-    func moveCursor(toX: Int, y: Int) {
+    public func moveCursor(toX: Int, y: Int) {
         let cmd = "\u{001B}[\(y);\(toX)H"
         stdout(cmd)
     }
     
-    func put(s: String) {
+    public func put(s: String) {
         stdout(s)
     }
     
-    func put(s: String, color: TermColor, style: TermStyle) {
+    public func put(s: String, color: TermColor, style: TermStyle) {
         stdout(s.apply(color, style: style))
     }
     
-    func set(_ color: TermColor, style: TermStyle) {
+    public func set(_ color: TermColor, style: TermStyle) {
         stdout("".apply(color, style: style))
     }
     
-    func set(_ color: TermColor, styles: [TermStyle]) {
+    public func set(_ color: TermColor, styles: [TermStyle]) {
         stdout("".apply(color, styles: styles))
     }
     
+    public func lock() { screenLock.lock() }
+    public func unlock() {screenLock.unlock() }
 }

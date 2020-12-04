@@ -65,7 +65,7 @@ func fillpart3( _ buffer: inout [[TermCharacter]], _ frame: Int) {
     let columns = buffer[0].count
     
     let centerX = columns/2
-    let step = rows/16*frame
+    let step = min(buffer.count-2,rows/16*frame)
     
     buffer[step][centerX-3] = TermCharacter("T", color: .light_red, styles: [.swap,.blink])
     buffer[step][centerX-2] = TermCharacter("E", color: .light_blue, styles: [.swap,.blink])
@@ -148,7 +148,7 @@ func doSeriesDemo() {
     series.seriesColor = .monochrome(.light_cyan)
 
     let switchTimer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { (timer) in
-        let next : TimeSeriesWindow.TimeSeriesStyle
+        let next : StandardSeriesWindow.StandardSeriesStyle
         switch series.seriesStyle {
         case .block:
             next = .line
