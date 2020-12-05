@@ -1,5 +1,4 @@
 import Foundation
-// import SwiftLoggerClient
 
 public class LiveSeriesWindow : TimeSeriesWindow {
     public override init(tick: TimeInterval, total: TimeInterval, source: @escaping () -> Double) {

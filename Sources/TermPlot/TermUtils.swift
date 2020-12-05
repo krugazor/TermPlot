@@ -4,6 +4,7 @@ import Glibc
 #endif
 
 // not very reliable
+#if os(macOS)
 public func TermSize() -> (cols: Int, rows: Int) {
     let task = Process()
     task.launchPath = "/bin/stty"
@@ -29,8 +30,8 @@ public func TermSize() -> (cols: Int, rows: Int) {
     } else {
         return (80,43)
     }
-    
 }
+#endif
 
 // better, still doesn't work in debugger stdout
 public func TermSize2() -> (cols: Int, rows: Int) {

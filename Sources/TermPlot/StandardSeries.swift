@@ -204,25 +204,41 @@ public class StandardSeriesWindow : TermWindow {
                     let dotPosition = min(max(dotHeight[colIdx],0), buffer.count-1)
                     if colIdx == 0 || colIdx+1 == buffer[0].count {
                         // begin and end with a flat
-                        buffer[buffer.count-dotPosition-1][colIdx] = TermCharacter(DisplaySymbol.horz_top.cWithStyle(.line), color: rowStyles[dotPosition].color, styles: rowStyles[dotPosition].styles)
+                        buffer[buffer.count-dotPosition-1][colIdx] = TermCharacter(DisplaySymbol.horz_top.cWithStyle(.line),
+                                                                                   color: rowStyles[dotPosition].color,
+                                                                                   styles: rowStyles[dotPosition].styles)
                     } else {
                         let nextPos = min(max(dotHeight[colIdx+1],0), buffer.count-1)
                         if nextPos == dotPosition {
-                            buffer[buffer.count-dotPosition-1][colIdx] = TermCharacter(DisplaySymbol.horz_top.cWithStyle(.line), color: rowStyles[dotPosition].color, styles: rowStyles[dotPosition].styles)
+                            buffer[buffer.count-dotPosition-1][colIdx] = TermCharacter(DisplaySymbol.horz_top.cWithStyle(.line),
+                                                                                       color: rowStyles[dotPosition].color,
+                                                                                       styles: rowStyles[dotPosition].styles)
                         } else if nextPos > dotPosition {
                             // make a connection
-                            buffer[buffer.count-dotPosition-1][colIdx] = TermCharacter(DisplaySymbol.bot_right.cWithStyle(.line), color: rowStyles[dotPosition].color, styles: rowStyles[dotPosition].styles)
+                            buffer[buffer.count-dotPosition-1][colIdx] = TermCharacter(DisplaySymbol.bot_right.cWithStyle(.line),
+                                                                                       color: rowStyles[dotPosition].color,
+                                                                                       styles: rowStyles[dotPosition].styles)
                             for i in (dotPosition+1)..<nextPos {
-                                buffer[buffer.count-i-1][colIdx] = TermCharacter(DisplaySymbol.vert_right.cWithStyle(.line), color: rowStyles[dotPosition].color, styles: rowStyles[dotPosition].styles)
+                                buffer[buffer.count-i-1][colIdx] = TermCharacter(DisplaySymbol.vert_right.cWithStyle(.line),
+                                                                                 color: rowStyles[i].color,
+                                                                                 styles: rowStyles[i].styles)
                             }
-                            buffer[buffer.count-nextPos-1][colIdx] = TermCharacter(DisplaySymbol.top_left.cWithStyle(.line), color: rowStyles[dotPosition].color, styles: rowStyles[dotPosition].styles)
+                            buffer[buffer.count-nextPos-1][colIdx] = TermCharacter(DisplaySymbol.top_left.cWithStyle(.line),
+                                                                                   color: rowStyles[nextPos].color,
+                                                                                   styles: rowStyles[nextPos].styles)
                        } else if nextPos < dotPosition {
                         // make a connection
-                        buffer[buffer.count-dotPosition-1][colIdx] = TermCharacter(DisplaySymbol.top_right.cWithStyle(.line), color: rowStyles[dotPosition].color, styles: rowStyles[dotPosition].styles)
+                        buffer[buffer.count-dotPosition-1][colIdx] = TermCharacter(DisplaySymbol.top_right.cWithStyle(.line),
+                                                                                   color: rowStyles[dotPosition].color,
+                                                                                   styles: rowStyles[dotPosition].styles)
                         for i in (nextPos+1)..<dotPosition {
-                            buffer[buffer.count-i-1][colIdx] = TermCharacter(DisplaySymbol.vert_right.cWithStyle(.line), color: rowStyles[dotPosition].color, styles: rowStyles[dotPosition].styles)
+                            buffer[buffer.count-i-1][colIdx] = TermCharacter(DisplaySymbol.vert_right.cWithStyle(.line),
+                                                                             color: rowStyles[i].color,
+                                                                             styles: rowStyles[i].styles)
                         }
-                        buffer[buffer.count-nextPos-1][colIdx] = TermCharacter(DisplaySymbol.bot_left.cWithStyle(.line), color: rowStyles[dotPosition].color, styles: rowStyles[dotPosition].styles)
+                        buffer[buffer.count-nextPos-1][colIdx] = TermCharacter(DisplaySymbol.bot_left.cWithStyle(.line),
+                                                                               color: rowStyles[nextPos].color,
+                                                                               styles: rowStyles[nextPos].styles)
                        }
                     }
                 }

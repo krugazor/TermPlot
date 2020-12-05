@@ -1,20 +1,6 @@
 import Foundation
 import TermPlot
 import ArgumentParser
-// import SwiftLoggerClient
-
-// doDemo()
-// doSeriesDemo()
-
-// SwiftLogger.setupForHTTP(URL(string: "http://localhost:8080")!, appName: "TermPlot")
-
-//let live = LiveSeriesWindow(tick: 1, total: 80, input: FileHandle.standardInput)
-//live.seriesStyle = .line
-//live.maxValue = 5
-//live.seriesColor = .quarters(.green, .blue, .yellow, .red)
-//live.start()
-//
-//RunLoop.current.run(until: Date.distantFuture)
 
 extension TermColor : ExpressibleByArgument {
 }
@@ -71,7 +57,7 @@ struct TermPlot : ParsableCommand {
     })
     var pColors: [TermColor]?
     
-    @Option(name: .shortAndLong, help: "Style of the graph (supported values: \(StandardSeriesWindow.StandardSeriesStyle.allCases)")
+    @Option(name: .shortAndLong, help: "Style of the graph (supported values: block, dot, line)")
     var style : StandardSeriesWindow.StandardSeriesStyle?
     
     @Flag(name: .long, help: "Should continue monitoring input for changes. By default, the program does not update anymore at the EOF")

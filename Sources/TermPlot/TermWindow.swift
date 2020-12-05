@@ -3,7 +3,6 @@ import Glibc
 #endif
 
 import Foundation
-// import SwiftLoggerClient
 
 public struct TermCharacter {
     var char : Character
