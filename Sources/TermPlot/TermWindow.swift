@@ -4,11 +4,20 @@ import Glibc
 
 import Foundation
 
+/// Basic "pixel" like structure
 public struct TermCharacter {
+    /// the character
     var char : Character
+    /// the color
     var color : TermColor
+    /// the styles
     var styles : [TermStyle]
     
+    /// Initializer with defaults built-in
+    /// - Parameters:
+    ///   - c: a character
+    ///   - col: a color
+    ///   - s: styles to use
     public init(_ c: Character = " ", color col : TermColor = .default, styles s: [TermStyle] = [.default]) {
         char = c
         color = col
@@ -16,9 +25,12 @@ public struct TermCharacter {
     }
 }
 
+/// "Screen" or "buffer" analog for output. Will be used by all descendants to draw things in the terminal
 public class TermWindow {
-    // Only one window is allowed
+    // Only one window should be allowed
+    /// Singleton variable
     static fileprivate var _window : TermWindow?
+    /// Singleton shared variable
     static public var `default` : TermWindow {
         if let w = _window { return w }
         let w = TermWindow()
@@ -26,30 +38,40 @@ public class TermWindow {
         return w
     }
     
+    /// clear screen lock
     fileprivate var screenLock : NSLock = NSLock()
+    /// settings grabbed from the terminal when the instance started
     fileprivate var originalSettings : termios?
+    /// have we setup the TTY?
     fileprivate var setup = false // until we do anything, no need to reserve space
+    /// number of rows in the buffer
     public private(set) var rows: Int {
         didSet {
             rowsDidChange()
         }
     }
+    /// number of columns in the buffer
     public private(set) var cols: Int {
         didSet {
             colsDidChange()
         }
     }
+    /// remnants from earlier experiments about lessening the number of redraws
     fileprivate var currentBox : (cols: Int, rows: Int) = (0,0) // ditto
+    /// remnants from earlier experiments about lessening the number of redraws
     fileprivate var cursorPosition : (x: Int, y: Int) = (0,0)
     
+    /// Function called when screen size changes
     func rowsDidChange() {
         // for override purposes
     }
     
+    /// Function called when screen size changes
     func colsDidChange() {
         // for override purposes
     }
     
+    /// Default initializer
     init() {
         rows = TermHandler.shared.rows
         cols = TermHandler.shared.cols
@@ -61,6 +83,7 @@ public class TermWindow {
         }
     }
     
+    /// Sets the ANSI terminal up (hides the cursor, clears the screen, etc)
     func setupTTY() {
         var stermios = termios()
         tcgetattr(STDOUT_FILENO, &stermios)
@@ -96,6 +119,8 @@ public class TermWindow {
         setup = true
     }
     
+    /// Restores the TTY to previous settings (before the program grabbed it)
+    /// - Parameter then: the block to call once the settings are restored
     func restoreTTY(then: @escaping ()->()) {
         DispatchQueue.global(qos: .background).async {
             TermHandler.shared.lock()
@@ -129,26 +154,35 @@ public class TermWindow {
         }
     }
     
+    /// Publicly exposed function to move the cursor right
+    /// - Parameter amount: number of steps
     public func moveCursorRight(_ amount: Int) {
         TermHandler.shared.moveCursorRight(amount)
         cursorPosition.x += 1
     }
     
+    /// Publicly exposed function to move the cursor left
+    /// - Parameter amount: number of steps
     public func moveCursorLeft(_ amount: Int) {
         TermHandler.shared.moveCursorLeft(amount)
         cursorPosition.x -= 1
     }
     
+    /// Publicly exposed function to move the cursor up
+    /// - Parameter amount: number of steps
     public func moveCursorUp(_ amount: Int) {
         TermHandler.shared.moveCursorUp(amount)
         cursorPosition.y -= 1
     }
     
+    /// Publicly exposed function to move the cursor down
+    /// - Parameter amount: number of steps
     public func moveCursorDown(_ amount: Int) {
         TermHandler.shared.moveCursorDown(amount)
         cursorPosition.y += 1
     }
     
+    /// Clears the screen and sets the TTY up if necessary
     public func clearScreen() {
         screenLock.lock()
         if !setup { setupTTY() }
@@ -160,6 +194,7 @@ public class TermWindow {
         screenLock.unlock()
     }
     
+    /// Draws a box around the screen
     public func boxScreen() {
         TermHandler.shared.lock()
         TermHandler.shared.set(TermColor.default, style: TermStyle.default)
@@ -180,6 +215,10 @@ public class TermWindow {
         TermHandler.shared.unlock()
     }
     
+    /// Draws the contents of a buffer to screen (blit function)
+    /// - Parameters:
+    ///   - buffer: the buffer to output
+    ///   - offset: the offset at which to start on screen
     func draw(_ buffer: [[Character]], offset: (Int,Int) = (0,0)) {
         TermHandler.shared.lock()
         TermHandler.shared.moveCursor(toX: offset.0, y: offset.1)
@@ -195,6 +234,10 @@ public class TermWindow {
         TermHandler.shared.unlock()
     }
     
+    /// Draws the contents of a buffer to screen (blit function)
+    /// - Parameters:
+    ///   - buffer: the buffer to output
+    ///   - offset: the offset at which to start on screen
     func draw(_ buffer: [[TermCharacter]], offset: (Int,Int) = (0,0)) {
         TermHandler.shared.lock()
         TermHandler.shared.moveCursor(toX: 1+offset.0, y: 1+offset.1)
@@ -211,6 +254,10 @@ public class TermWindow {
         TermHandler.shared.unlock()
     }
     
+    /// Reserve and callback mechanic to draw on screen: a buffer is generated according to the current size, then filled by the block, then blit
+    /// - Parameters:
+    ///   - box: should we box the screen?
+    ///   - handler: the block that will fill the buffer
     public func requestBuffer(box: Bool = true, _ handler: (inout [[Character]])->Void) {
         if box {
             var buffer = [[Character]](repeating: [Character](repeating: " ", count: cols-2), count: rows-2)
@@ -227,6 +274,10 @@ public class TermWindow {
         }
     }
     
+    /// Reserve and callback mechanic to draw on screen: a buffer is generated according to the current size, then filled by the block, then blit
+    /// - Parameters:
+    ///   - box: should we box the screen?
+    ///   - handler: the block that will fill the buffer
     public func requestStyledBuffer(box: Bool = true, _ handler: (inout [[TermCharacter]])->Void) {
         if box {
             var buffer = [[TermCharacter]](repeating: [TermCharacter](repeating: TermCharacter(), count: cols-2), count: rows-2)

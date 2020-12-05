@@ -1,6 +1,7 @@
 import Foundation
 
 // MARK: Colors
+/// The ANSI colors (self explanatory)
 public enum TermColor : Int, CaseIterable {
     case black = 0
     case light_black = 60
@@ -21,6 +22,7 @@ public enum TermColor : Int, CaseIterable {
     case `default` = 9
 }
 
+/// The ANSI styles (self explanatory)
 public enum TermStyle : Int, CaseIterable {
     case bold = 1
     case italic = 3
@@ -32,9 +34,19 @@ public enum TermStyle : Int, CaseIterable {
 }
 
 public extension String {
+    /// Creates a string with specified color and style
+    /// - Parameters:
+    ///   - color: the color to use
+    ///   - style: the style to use
+    /// - Returns: a string ready to be output in an ANSI terminal
     func apply(_ color: TermColor, style: TermStyle = .default) -> String {
         return "\u{001B}[\(color.rawValue + 30)m" + "\u{001B}[\(style.rawValue)m" + self
     }
+    /// Creates a string with specified color and style
+    /// - Parameters:
+    ///   - color: the color to use
+    ///   - styles: the styles to use
+    /// - Returns: a string ready to be output in an ANSI terminal
     func apply(_ color: TermColor, styles: [TermStyle] = [.default]) -> String {
         let stylesStr = styles.map { "\u{001B}[\($0.rawValue)m" }.joined()
         return "\u{001B}[\(color.rawValue + 30)m" + stylesStr + self
@@ -43,9 +55,12 @@ public extension String {
 
 // MARK: Control
 
+/// ANSI control sequence for hiding the cursor
 public let HIDE_CURSOR = "\u{001B}[?25l"
+/// ANSI control sequence for showing the cursor
 public let SHOW_CURSOR = "\u{001B}[?25h"
 
+/// ANSI control sequences
 public enum TermControl : String {
     case CR = "\r"
     case NEWLINE = "\n"
@@ -58,6 +73,8 @@ public enum TermControl : String {
 }
 
 // MARK: Display Characters
+/// Equivalence dictionary for constants used later
+/// `line` variant
 var line : [String:String] = [
     "empty" : " ",
     "point" : "─",
@@ -73,6 +90,8 @@ var line : [String:String] = [
     "tick_left" : "├",
 ]
 
+/// Equivalence dictionary for constants used later
+/// `heavyline` variant
 var heavyline : [String:String] = [
     "empty" : " ",
     "point" : "━",
@@ -88,26 +107,35 @@ var heavyline : [String:String] = [
     "tick_left" : "┣",
 ]
 
+/// Equivalence dictionary for constants used later
+/// `dots` variant
 var dots : [String:String] = [
     "empty" : " ",
     "point" : "•",
 ]
 
+/// Equivalence dictionary for constants used later
+/// `crosses` variant
 var crosses : [String:String] = [
     "empty" : " ",
     "point" : "x",
 ]
 
+/// Equivalence dictionary for constants used later
+/// `pluses` variant
 var pluses : [String:String] = [
     "empty" : " ",
     "point" : "+",
 ]
 
+/// Equivalence dictionary for constants used later
+/// `stars` variant
 var stars : [String:String] = [
     "empty" : " ",
     "point" : "*",
 ]
 
+/// Possible styles for the graph
 public enum DisplayStyle : CaseIterable {
     case line
     case heavyline
@@ -117,6 +145,7 @@ public enum DisplayStyle : CaseIterable {
     case stars
 }
 
+/// Possible symbols to use in the graph
 public enum DisplaySymbol : String, CaseIterable {
     case empty
     case point
@@ -130,7 +159,10 @@ public enum DisplaySymbol : String, CaseIterable {
     case bot_right
     case tick_right
     case tick_left
-
+    
+    /// Adapts the symbol to a style, and generates a string ready for output
+    /// - Parameter s: the style to use
+    /// - Returns: the string to output
     public func withStyle(_ s: DisplayStyle) -> String {
         let style : [String:String]
         switch(s) {
@@ -151,6 +183,9 @@ public enum DisplaySymbol : String, CaseIterable {
         return style[self.rawValue] ?? style[DisplaySymbol.empty.rawValue]!
     }
     
+    /// Adapts the symbol to a style, and generates a character ready for output
+    /// - Parameter s: the style to use
+    /// - Returns: the character to output
     public func cWithStyle(_ s: DisplayStyle) -> Character {
         let style : [String:String]
         switch(s) {

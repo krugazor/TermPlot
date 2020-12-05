@@ -1,42 +1,59 @@
 import Foundation
 
+/// Standard series display: x number of y values
 public class StandardSeriesWindow : TermWindow {
+    /// Publicly exposed possible styles (self explanatory)
     public enum StandardSeriesStyle : String, CaseIterable {
         case block
         case line
         case dot
     }
+    /// Color schemes
+    /// - monochrome
+    /// - quarters (1/4 of the screen is the same color)
+    /// - quartiles (1/4 of the *values* is the same color)
     public enum StandardSeriesColorScheme {
         case monochrome(TermColor)
         case quarters(TermColor,TermColor,TermColor,TermColor)
         case quartiles(TermColor,TermColor,TermColor,TermColor)
     }
     
+    /// x-axis range size
     var totalTime : TimeInterval
+    /// x-axis tick mark
     var timeTick : TimeInterval
+    /// x-axis tick count
     var timeCount : Int { Int(ceil(totalTime/timeTick)) }
     
+    /// ceiling of the graph, if necessary
+    /// will be computed if nil
     public var maxValue : Double?
+    /// Current series color scheme
     public var seriesColor : StandardSeriesColorScheme = .monochrome(.red) {
         didSet {
             computeRowStyles()
         }
     }
+    /// Current series style
     public var seriesStyle : StandardSeriesStyle = .block {
         didSet {
             computeRowStyles()
         }
     }
     
+    /// The actual y values
     var values : [Double]
     
+    /// Pre-computed color/style by row (needed for quartiles most of all)
     var rowStyles : [(color: TermColor, styles:[TermStyle])]
     
-    override func colsDidChange() {
-        super.colsDidChange()
+    /// Recompute row styles (needed for quartiles most of all) when the number of rows changes
+    override func rowsDidChange() {
+        super.rowsDidChange()
         computeRowStyles()
     }
     
+    /// Recompute row styles
     func computeRowStyles() {
         rowStyles = [(color: TermColor, styles:[TermStyle])](repeating: (.default, [.default]), count: rows-2)
         
@@ -101,6 +118,10 @@ public class StandardSeriesWindow : TermWindow {
         }
     }
     
+    /// Public initializer
+    /// - Parameters:
+    ///   - tick: width of an x-interval
+    ///   - total: range of the x-axis
     public init(tick: TimeInterval, total: TimeInterval) {
         totalTime = total
         timeTick = tick
@@ -113,30 +134,41 @@ public class StandardSeriesWindow : TermWindow {
         super.init()
     }
     
+    /// Adds a value to the end of the buffer
+    /// - Parameter val: the value
     public func addValue(_ val: Double) {
         values.append(val)
         self.display()
     }
+    /// Adds values to the end of the buffer
+    /// - Parameter vals: the values
     public func addValues(_ vals: [Double]) {
         values.append(contentsOf: vals)
         self.display()
     }
+    /// Replaces all the values in the buffer
+    /// - Parameter with: the new values
     public func replaceValues(with: [Double]) {
         values = with
         self.display()
     }
+    /// Reserve-and-modify mechanism to replace the values in the buffer selectively
+    /// - Parameter apply: the block to call for new values
     public func modifyValues(_ apply: @escaping ([Double])->[Double]) {
         let replacement = apply(values)
         self.replaceValues(with: replacement)
     }
     
+    /// Overrided function to start displaying the graph
     public func start() {
         self.display()
     }
     
+    /// Overrided function to stop displaying the graph
     public func stop() {
     }
     
+    /// Display the buffer, based on current style and colors
     func display() {
         clearScreen()
         // calculate max value
@@ -246,13 +278,23 @@ public class StandardSeriesWindow : TermWindow {
         }
     }
     
+    /// Used for interpolation, gets the function that defines the line between two points
+    /// - Parameters:
+    ///   - point1: first point
+    ///   - point2: second point
+    /// - Returns: `a*x+b*y+c=0` equation parameters (a,b, and c)
     static func getLineParameters(point1: (x: Double, y:Double), point2: (x: Double, y:Double)) -> (a: Double, b: Double, c: Double) {
         let a = point1.y - point2.y
         let b = point2.x - point1.x
         let c = ((-b)*point1.y) + ((-a)*point1.x) // eeeeeeeet oui
         return (a,b,c)
     }
-
+    
+    /// Interpolation function
+    /// - Parameters:
+    ///   - points: the discreet points to start from
+    ///   - to: the discreet domain (x) to map onto
+    /// - Returns: the discreet mapped points
     static func mapDomains(_ points: [(x: Double, y:Double)], to: [Double]) -> [(x: Double, y:Double)] {
         // just in case
         let to = to.sorted()

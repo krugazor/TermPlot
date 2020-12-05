@@ -1,11 +1,18 @@
 import Foundation
 
+/// Time series based on file handle rather than a source block
 public class LiveSeriesWindow : TimeSeriesWindow {
+    /// Neutralized public initializer
     public override init(tick: TimeInterval, total: TimeInterval, source: @escaping () -> Double) {
         print("You probably wanted to use TimeSeriesWindow")
         exit(-1)
     }
     
+    /// Public initializer
+    /// - Parameters:
+    ///   - tick: width of an x-interval (tick time)
+    ///   - total: range of the x-axis
+    ///   - input: file handle to read from
     public init(tick: TimeInterval, total: TimeInterval, input: FileHandle) {
         var buffer = ""
         NotificationCenter.default.addObserver(forName: FileHandle.readCompletionNotification,

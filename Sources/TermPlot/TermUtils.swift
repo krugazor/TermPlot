@@ -3,8 +3,10 @@ import Foundation
 import Glibc
 #endif
 
-// not very reliable
 #if os(macOS)
+/// Use to determine the terminal size (columns and rows)
+/// not very reliable
+/// - Returns: a tuple containing the columns and rows
 public func TermSize() -> (cols: Int, rows: Int) {
     let task = Process()
     task.launchPath = "/bin/stty"
@@ -33,7 +35,9 @@ public func TermSize() -> (cols: Int, rows: Int) {
 }
 #endif
 
-// better, still doesn't work in debugger stdout
+/// Use to determine the terminal size (columns and rows)
+/// better, still doesn't work in debugger console
+/// - Returns: a tuple containing the columns and rows
 public func TermSize2() -> (cols: Int, rows: Int) {
     var size : winsize = winsize()
     #if os(Linux)
@@ -44,6 +48,8 @@ public func TermSize2() -> (cols: Int, rows: Int) {
     return (Int(size.ws_col), Int(size.ws_row))
 }
 
+/// Function called by the signal handler
+/// - Parameter sig: the incoming signal
 fileprivate func signalHandler(_ sig: Int32) {
     let(c,r) = TermSize2()
     TermHandler.shared.cols = c
@@ -51,17 +57,26 @@ fileprivate func signalHandler(_ sig: Int32) {
     TermHandler.shared.windowResizedAction?(TermHandler.shared)
 }
 
+/// Function used to print to console, without the frills
+/// - Parameter s: the string to put out
 func stdout(_ s: String) {
     let out = FileHandle.standardOutput
     out.write(s.data(using: .utf8)!)
 }
 
+/// Low level class used to handle everything ANSI
 public class TermHandler {
+    /// columns in the current instance
     public fileprivate(set) var cols  = 80
+    /// lines in the current instance
     public fileprivate(set) var rows = 43
-    var windowResizedAction : ((TermHandler)->Void)? // not the most elegant, but I cannot have labels on the arguments
+    /// block to call in the event of window resizing
+    /// not the most elegant, but I cannot have labels on the arguments
+    var windowResizedAction : ((TermHandler)->Void)?
+    /// the "v-sync" lock
     var screenLock = NSLock()
     
+    /// private-ish initializer for the singleton
     init() {
         let(c,r) = TermSize2()
         if c == 0 && r == 0 { // debug weirdness
@@ -102,7 +117,9 @@ public class TermHandler {
         #endif
     }
     
+    /// private singleton instance
     static var _instance : TermHandler?
+    /// public shared singleton
     static var shared : TermHandler {
         if let i = _instance { return i }
         let i = TermHandler()
@@ -111,52 +128,77 @@ public class TermHandler {
     }
     
     // MARK: utility functions
+    /// Moves the cursor right by a certain amount
+    /// - Parameter amount: the delta
     public func moveCursorRight(_ amount: Int) {
         for _ in 0..<amount {
             stdout(TermControl.FORWARD.rawValue)
         }
     }
     
+    /// Moves the cursor left by a certain amount
+    /// - Parameter amount: the delta
     public func moveCursorLeft(_ amount: Int) {
         for _ in 0..<amount {
             stdout(TermControl.BACK.rawValue)
         }
     }
     
+    /// Moves the cursor down by a certain amount
+    /// - Parameter amount: the delta
     public func moveCursorDown(_ amount: Int) {
         for _ in 0..<amount {
             stdout(TermControl.DOWN.rawValue)
         }
     }
     
+    /// Moves the cursor up by a certain amount
+    /// - Parameter amount: the delta
     public func moveCursorUp(_ amount: Int) {
         for _ in 0..<amount {
             stdout(TermControl.UP.rawValue)
         }
     }
     
-    // Warning! 1-based
+    /// Moves the cursor to specific coordinates. Warning! 1-based
+    /// - Parameters:
+    ///   - toX: x position
+    ///   - y: y position
     public func moveCursor(toX: Int, y: Int) {
         let cmd = "\u{001B}[\(y);\(toX)H"
         stdout(cmd)
     }
     
+    /// variant of (out)put with an agnostic string
+    /// - Parameter s: the text to output
     public func put(s: String) {
         stdout(s)
     }
     
+    /// variant of (out)put with an specific style
+    /// - Parameter s: the text to output
+    /// - Parameter color: the color to use
+    /// - Parameter style: the style to use
     public func put(s: String, color: TermColor, style: TermStyle) {
         stdout(s.apply(color, style: style))
     }
     
+    /// changes the style for the next output
+    /// - Parameter color: the color to use
+    /// - Parameter style: the style to use
     public func set(_ color: TermColor, style: TermStyle) {
         stdout("".apply(color, style: style))
     }
     
+    /// changes the style for the next output
+    /// - Parameter color: the color to use
+    /// - Parameter style: the set of styles to use
     public func set(_ color: TermColor, styles: [TermStyle]) {
         stdout("".apply(color, styles: styles))
     }
     
+    /// Locks the v-blank
     public func lock() { screenLock.lock() }
+    /// Unlocks the v-blank
     public func unlock() {screenLock.unlock() }
 }
