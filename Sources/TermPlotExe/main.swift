@@ -118,6 +118,7 @@ struct TermPlot : ParsableCommand {
             if let file = file, let handle = FileHandle.init(forReadingAtPath: file) {
                 let (cols,_) = TermSize2()
                 let window = LiveSeriesWindow(tick: 1, total: Double(cols), input: handle)
+                window.boxStyle = .ticked
                 window.seriesColor = winColor
                 window.seriesStyle = winStyle
                 window.start()
@@ -125,6 +126,7 @@ struct TermPlot : ParsableCommand {
                 // can stdin be anything but live?
                 let (cols,_) = TermSize2()
                 let window = LiveSeriesWindow(tick: 1, total: Double(cols), input: FileHandle.standardInput)
+                window.boxStyle = .ticked
                 window.seriesColor = winColor
                 window.seriesStyle = winStyle
                 window.start()
@@ -139,6 +141,7 @@ struct TermPlot : ParsableCommand {
                 })
                 let (cols,_) = TermSize2()
                 let window = StandardSeriesWindow(tick: 1, total: Double(cols))
+                window.boxStyle = .ticked
                 window.seriesColor = winColor
                 window.seriesStyle = winStyle
                 // TODO: update on change
@@ -158,6 +161,7 @@ struct TermPlot : ParsableCommand {
                     else { return nil }
                 })
                 let window = StandardSeriesWindow(tick: 1, total: Double(numbers.count))
+                window.boxStyle = .ticked
                 window.seriesColor = winColor
                 window.seriesStyle = winStyle
                 window.replaceValues(with: numbers)

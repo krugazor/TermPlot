@@ -17,6 +17,16 @@ public class StandardSeriesWindow : TermWindow {
         case quarters(TermColor,TermColor,TermColor,TermColor)
         case quartiles(TermColor,TermColor,TermColor,TermColor)
     }
+
+    /// Box styles for public consumption
+    /// - none empty border
+    /// - simple dashes and pipes (simple line)
+    /// - ticked (will do its best to add meaningful tick marks)
+    public enum StandardSeriesBoxType {
+        case none
+        case simple
+        case ticked
+    }
     
     /// x-axis range size
     var totalTime : TimeInterval
@@ -40,6 +50,9 @@ public class StandardSeriesWindow : TermWindow {
             computeRowStyles()
         }
     }
+
+    /// Current box style
+    public var boxStyle : StandardSeriesBoxType = .simple
     
     /// The actual y values
     var values : [Double]
@@ -116,6 +129,10 @@ public class StandardSeriesWindow : TermWindow {
                 break
             }
         }
+        
+        // cheat because of the border/noborder dichotomy: triplicate the last value
+        let last = rowStyles.last!
+        rowStyles += [last,last]
     }
     
     /// Public initializer
@@ -172,12 +189,20 @@ public class StandardSeriesWindow : TermWindow {
     func display() {
         clearScreen()
         // calculate max value
+        let bufferCols : Int
+        let bufferRows : Int
+        switch boxStyle {
+        case .none:
+            bufferCols = cols
+            bufferRows = rows
+        default:
+            bufferCols = cols-2
+            bufferRows = rows-2
+        }
         let maxHeight = ceil(maxValue ?? self.values.max() ?? 1)
-        var conversionFactor = Double(rows-2) / maxHeight
+        var conversionFactor = Double(bufferRows) / maxHeight
         if conversionFactor.isNaN || conversionFactor.isInfinite { conversionFactor = 1 }
-        // draw axises
-        // TODO
-        // map timecount items in cols bins
+         // map timecount items in cols bins
         var heldValues = [(x: Double, y: Double)]()
         for x in 0..<timeCount {
             heldValues.append((Double(x+1)*timeTick, values[x]))
@@ -185,8 +210,8 @@ public class StandardSeriesWindow : TermWindow {
         var timeCols = [Double]()
         let start = heldValues[0].x
         timeCols.append(start)
-        let timeColStep = totalTime/Double(cols-1)
-        for c in 1..<cols-2 {
+        let timeColStep = totalTime/Double(bufferCols+1)
+        for c in 1..<bufferCols {
             timeCols.append(start+Double(c)*timeColStep)
         }
         timeCols.append(heldValues[heldValues.count-1].x)
@@ -200,14 +225,61 @@ public class StandardSeriesWindow : TermWindow {
             break
         }
         
+        // compute axises
+        let drawBoxStyle : BoxType
+        switch boxStyle {
+        case .none : drawBoxStyle = .none
+        case .simple: drawBoxStyle = .simple
+        case .ticked:
+            var horizontalticks = [(col:Int, str: String)]()
+            let third = round(Double((2*bufferCols)/3)*timeColStep*10)/10
+            horizontalticks.append((bufferCols/3, "\(third)"))
+            let twothird = round(Double((bufferCols)/3)*timeColStep*10)/10
+            horizontalticks.append(((2*bufferCols)/3, "\(twothird)"))
+            var verticalticks = [(row:Int, str: String)]()
+            let maxq = round(10*maxHeight)/10
+            let quarter1 = round(10*maxHeight/4)/10
+            let quarter2 = round(20*maxHeight/4)/10
+            let quarter3 = round(30*maxHeight/4)/10
+            let textlength = max("\(maxq)".count,"\(quarter1)".count,"\(quarter2)".count,"\(quarter3)".count)+1
+            let minmax : (min: Double, max: Double) = mapping[0...textlength].reduce((Double.greatestFiniteMagnitude,0)) { (arg0, next)->(Double,Double) in
+                let (pmin, pmax) = arg0
+                return (min(pmin, next.1/conversionFactor) ,max(pmax, next.1/conversionFactor))
+            }
+            let vrange = (minmax.min...minmax.max)
+            
+            verticalticks.append((1,"- \(maxq) ")) // top
+            if !vrange.contains(quarter1) {
+                verticalticks.append((rows-Int(quarter1*conversionFactor),"\(quarter1)"))
+            } else {
+                verticalticks.append((rows-Int(quarter1*conversionFactor),""))
+            }
+            
+            if !vrange.contains(quarter2) {
+                verticalticks.append((rows-Int(quarter2*conversionFactor),"\(quarter2)"))
+            } else {
+                verticalticks.append((rows-Int(quarter2*conversionFactor),""))
+            }
+            
+            if !vrange.contains(quarter3) {
+                verticalticks.append((rows-Int(quarter3*conversionFactor),"\(quarter3)"))
+            } else {
+                verticalticks.append((rows-Int(quarter3*conversionFactor),""))
+            }
+            
+           drawBoxStyle = .ticked(horizontalticks, verticalticks)
+       }
+
         if seriesStyle == .block {
             // draw the columns
-            requestStyledBuffer { buffer in
+            requestStyledBuffer(box: drawBoxStyle) { buffer in
                 for rowIdx in 0..<buffer.count {
                     for colIdx in 0..<buffer[0].count {
                         let val = Int(mapping[colIdx].1)
                         if val >= rowIdx {
-                            buffer[buffer.count-rowIdx-1][colIdx] = TermCharacter(".", color: rowStyles[rowIdx].color, styles: rowStyles[rowIdx].styles)
+                            buffer[buffer.count-rowIdx-1][colIdx] = TermCharacter(".",
+                                                                                  color: rowStyles[rowIdx].color,
+                                                                                  styles: rowStyles[rowIdx].styles)
                         }
                     }
                 }
@@ -217,11 +289,13 @@ public class StandardSeriesWindow : TermWindow {
             let dotHeight = mapping.map { (col,val) -> Int in
                 return Int(round(val))
             }
-            requestStyledBuffer { buffer in
+            requestStyledBuffer(box: drawBoxStyle) { buffer in
                 for colIdx in 0..<buffer[0].count {
                     let dotPosition = dotHeight[colIdx]
                     if dotPosition < buffer.count {
-                        buffer[buffer.count-dotPosition-1][colIdx] = TermCharacter(DisplaySymbol.point.cWithStyle(.dots), color: rowStyles[dotPosition].color, styles: rowStyles[dotPosition].styles)
+                        buffer[buffer.count-dotPosition-1][colIdx] = TermCharacter(DisplaySymbol.point.cWithStyle(.dots),
+                                                                                   color: rowStyles[dotPosition].color, styles:
+                                                                                    rowStyles[dotPosition].styles)
                     }
                 }
             }
@@ -231,7 +305,7 @@ public class StandardSeriesWindow : TermWindow {
             let dotHeight = mapping.map { (col,val) -> Int in
                 return Int(round(val))
             }
-            requestStyledBuffer { buffer in
+            requestStyledBuffer(box: drawBoxStyle) { buffer in
                 for colIdx in 0..<buffer[0].count {
                     let dotPosition = min(max(dotHeight[colIdx],0), buffer.count-1)
                     if colIdx == 0 || colIdx+1 == buffer[0].count {

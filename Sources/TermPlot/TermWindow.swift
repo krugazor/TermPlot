@@ -194,8 +194,26 @@ public class TermWindow {
         screenLock.unlock()
     }
     
+    /// Box type around the screen
+    /// - none is none
+    /// - simple is just dashes and pipes (straight lines all the way)
+    /// - ticked is simple + tick marks
+    public enum BoxType {
+        case none
+        case simple
+        case ticked([(col: Int, str: String)],[(row: Int, str: String)])
+    }
+    
     /// Draws a box around the screen
-    public func boxScreen() {
+    /// - Parameter style: the box style (default `.simple`)
+    public func boxScreen(_ style: BoxType = .simple) {
+        switch style {
+        case .none:
+            return
+        default:
+            break
+        } // the issue with enums that have associated values is you can't test them with == anymore
+        
         TermHandler.shared.lock()
         TermHandler.shared.set(TermColor.default, style: TermStyle.default)
         clearScreen()
@@ -213,6 +231,23 @@ public class TermWindow {
         for _ in 1...cols { stdout(DisplaySymbol.horz_top.withStyle(.line)) }
         TermHandler.shared.set(.default, style: .default)
         TermHandler.shared.unlock()
+        
+        switch style {
+        case .ticked(let colTicks, let rowTicks):
+            for (col,str) in colTicks {
+                if col + str.count >= self.cols { break } // sorry, won't go there
+                TermHandler.shared.moveCursor(toX: col, y: self.rows)
+                stdout(DisplaySymbol.tick_up.withStyle(.line)+str.apply(.default, style: .default))
+            }
+            for (row,str) in rowTicks {
+                if row >= rows { break } // ditto
+                TermHandler.shared.moveCursor(toX: 1, y: row)
+                stdout(DisplaySymbol.tick_left.withStyle(.line)+str.apply(.default, style: .default))
+            }
+            break
+        default:
+            break
+        } // ditto
     }
     
     /// Draws the contents of a buffer to screen (blit function)
@@ -225,7 +260,11 @@ public class TermWindow {
         var crow = offset.1+1
         for row in buffer {
             for char in row {
-                stdout(String(char))
+                if char != " " {
+                    stdout(String(char))
+                } else {
+                    TermHandler.shared.moveCursorRight(1)
+                }
             }
             crow += 1
             TermHandler.shared.moveCursor(toX: offset.0+1, y: crow)
@@ -244,9 +283,13 @@ public class TermWindow {
         var crow = offset.1+1
         for row in buffer {
             for char in row {
-                TermHandler.shared.set(char.color, styles: char.styles)
-                stdout(String(char.char))
-            }
+                if char.char != " " {
+                    TermHandler.shared.set(char.color, styles: char.styles)
+                    stdout(String(char.char))
+                } else {
+                    TermHandler.shared.moveCursorRight(1)
+                }
+           }
             crow += 1
             TermHandler.shared.moveCursor(toX: offset.0+1, y: crow)
         }
@@ -258,19 +301,20 @@ public class TermWindow {
     /// - Parameters:
     ///   - box: should we box the screen?
     ///   - handler: the block that will fill the buffer
-    public func requestBuffer(box: Bool = true, _ handler: (inout [[Character]])->Void) {
-        if box {
-            var buffer = [[Character]](repeating: [Character](repeating: " ", count: cols-2), count: rows-2)
-            handler(&buffer)
-            
-            boxScreen()
-            
-            draw(buffer, offset: (1,1))
-        } else {
+    public func requestBuffer(box: BoxType = .simple, _ handler: (inout [[Character]])->Void) {
+        switch box {
+        case .none:
             var buffer = [[Character]](repeating: [Character](repeating: " ", count: cols), count: rows)
             handler(&buffer)
 
             draw(buffer)
+        default:
+            var buffer = [[Character]](repeating: [Character](repeating: " ", count: cols-2), count: rows-2)
+            handler(&buffer)
+            
+            boxScreen(box)
+            
+            draw(buffer, offset: (1,1))
         }
     }
     
@@ -278,18 +322,19 @@ public class TermWindow {
     /// - Parameters:
     ///   - box: should we box the screen?
     ///   - handler: the block that will fill the buffer
-    public func requestStyledBuffer(box: Bool = true, _ handler: (inout [[TermCharacter]])->Void) {
-        if box {
-            var buffer = [[TermCharacter]](repeating: [TermCharacter](repeating: TermCharacter(), count: cols-2), count: rows-2)
-            handler(&buffer)
-            
-            boxScreen()
-            draw(buffer, offset: (1,1))
-        } else {
+    public func requestStyledBuffer(box: BoxType = .simple, _ handler: (inout [[TermCharacter]])->Void) {
+        switch box {
+        case .none:
             var buffer = [[TermCharacter]](repeating: [TermCharacter](repeating: TermCharacter(), count: cols), count: rows)
             handler(&buffer)
 
             draw(buffer)
+        default:
+            var buffer = [[TermCharacter]](repeating: [TermCharacter](repeating: TermCharacter(), count: cols-2), count: rows-2)
+            handler(&buffer)
+            
+            boxScreen(box)
+            draw(buffer, offset: (1,1))
         }
     }
 

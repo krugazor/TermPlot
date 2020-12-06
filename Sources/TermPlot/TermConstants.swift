@@ -88,6 +88,8 @@ var line : [String:String] = [
     "bot_right" : "┘",
     "tick_right" : "┤",
     "tick_left" : "├",
+    "tick_up": "┴",
+    "tick_down" : "┬",
 ]
 
 /// Equivalence dictionary for constants used later
@@ -105,6 +107,8 @@ var heavyline : [String:String] = [
     "bot_right" : "┛",
     "tick_right": "┫",
     "tick_left" : "┣",
+    "tick_up": "┻",
+    "tick_down" : "┳",
 ]
 
 /// Equivalence dictionary for constants used later
@@ -159,7 +163,9 @@ public enum DisplaySymbol : String, CaseIterable {
     case bot_right
     case tick_right
     case tick_left
-    
+    case tick_up
+    case tick_down
+
     /// Adapts the symbol to a style, and generates a string ready for output
     /// - Parameter s: the style to use
     /// - Returns: the string to output

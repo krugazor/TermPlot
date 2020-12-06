@@ -153,12 +153,15 @@ func doSeriesDemo() {
         case .block:
             next = .line
             series.seriesColor = .monochrome(.light_red)
+            series.boxStyle = .ticked
         case .line:
             next = .dot
             series.seriesColor = .monochrome(.light_yellow)
+            series.boxStyle = .none
        case .dot:
             next = .block
             series.seriesColor = .monochrome(.light_cyan)
+            series.boxStyle = .simple
         }
         series.seriesStyle = next
     }
