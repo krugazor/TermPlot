@@ -120,7 +120,7 @@ public class TermHandler {
     /// private singleton instance
     static var _instance : TermHandler?
     /// public shared singleton
-    static var shared : TermHandler {
+    static public var shared : TermHandler {
         if let i = _instance { return i }
         let i = TermHandler()
         _instance = i
