@@ -14,6 +14,8 @@ And also, but why would you:
 
 Utility and library to plot graphs in a terminal window. Uses ANSI colors and UTF-8 display characters.
 
+![Screenshot](screenshot.png)
+
 ## Inspiration/Motivation
 
 I spend a decent chunk of my time coding for headless/terminal based projects. Most of the time, when working with server processes or long running CLI programs, the output is a long text, more often than not without any color.
