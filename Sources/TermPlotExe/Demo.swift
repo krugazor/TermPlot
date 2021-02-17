@@ -169,3 +169,34 @@ func doSeriesDemo() {
     series.start()
     RunLoop.current.run(until: Date.distantFuture)
 }
+
+func doMultiDemo() {
+    var v1 = 1
+    let series1 = TimeSeriesWindow(tick: 0.25, total: 8) {
+        v1 += 1
+        v1 = v1 % 5
+        let random = Int.random(in: 0...v1)
+        return Double(random)
+    }
+    series1.seriesColor = .monochrome(.light_cyan)
+    series1.boxStyle = .none
+
+    var v2 = 1
+    let series2 = TimeSeriesWindow(tick: 0.25, total: 8) {
+        v2 += 1
+        v2 = v1 % 5
+        let random = Int.random(in: 0...v2)
+        return Double(random)
+    }
+    series2.seriesColor = .monochrome(.light_red)
+    series2.boxStyle = .none
+    series2.seriesStyle = .line
+
+    guard let multi = try? TermMultiWindow.setup(stack: .vertical, ratios: [0.5,0.5], series1,series2) else {
+        print("failed to setup multi-windows")
+        return
+    }
+    multi.start()
+    RunLoop.current.run(until: Date.distantFuture)
+
+}

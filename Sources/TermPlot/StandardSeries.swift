@@ -187,7 +187,7 @@ public class StandardSeriesWindow : TermWindow {
     
     /// Display the buffer, based on current style and colors
     func display() {
-        clearScreen()
+        if embeddedIn == nil { clearScreen() }
         if values.count == 0 {
             values = [Double](repeating: 0, count: cols)
         }
