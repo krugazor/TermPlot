@@ -58,6 +58,9 @@ struct TermPlot : ParsableCommand {
     @Flag(name: .long, help: "Runs the demo")
     var demo = false
     
+    @Flag(name: .long, help: "Runs the multiple windows demo")
+    var multi = false
+    
     @Option(name: .shortAndLong, help: "The file to read from. If absent, will read from standard input")
     var file: String?
     
@@ -100,6 +103,9 @@ struct TermPlot : ParsableCommand {
             return
         } else if demo {
             doSeriesDemo()
+            return
+        } else if multi {
+            doMultiDemo()
             return
         }
         
