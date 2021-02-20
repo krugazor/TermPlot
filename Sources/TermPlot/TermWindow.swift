@@ -295,13 +295,13 @@ public class TermWindow {
     /// - Parameters:
     ///   - buffer: the buffer to output
     ///   - offset: the offset at which to start on screen
-    func draw(_ buffer: [[Character]], offset: (Int,Int) = (0,0)) {
+    func draw(_ buffer: [[Character]], offset: (Int,Int) = (0,0), clearSkip: Bool = true) {
         TermHandler.shared.lock()
         TermHandler.shared.moveCursor(toX: offset.0, y: offset.1)
         var crow = offset.1+1
         for row in buffer {
             for char in row {
-                if char != " " {
+                if !clearSkip || char != " " {
                     stdout(String(char))
                 } else {
                     TermHandler.shared.moveCursorRight(1)
@@ -318,13 +318,13 @@ public class TermWindow {
     /// - Parameters:
     ///   - buffer: the buffer to output
     ///   - offset: the offset at which to start on screen
-    func draw(_ buffer: [[TermCharacter]], offset: (Int,Int) = (0,0)) {
+    func draw(_ buffer: [[TermCharacter]], offset: (Int,Int) = (0,0), clearSkip: Bool = true) {
         TermHandler.shared.lock()
         TermHandler.shared.moveCursor(toX: 1+offset.0, y: 1+offset.1)
         var crow = offset.1+1
         for row in buffer {
             for char in row {
-                if char.char != " " {
+                if !clearSkip || char.char != " " {
                     TermHandler.shared.set(char.color, styles: char.styles)
                     stdout(String(char.char))
                 } else {
