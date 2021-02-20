@@ -1,20 +1,30 @@
 import Foundation
 
+/// Class that allows sub window compositions in stacks, either horizontal or vertical
 public class TermMultiWindow : TermWindow {
+    
+    /// The stacking type
     public enum StackType {
-        case horizontal
-        case vertical
+        case horizontal /// splits the terminal horizontally
+        case vertical /// splits the terminal vertically
     }
     
+    /// Generic error type for filtering
+    /// TODO: expand on it
     public struct ConfigurationError : Error {
         
     }
     
-    let subwindows : [TermWindow]
-    let stackType: StackType
-    let ratios : [Float]
-    var offsets : [Int]
+    let subwindows : [TermWindow] /// subwindows for this window
+    let stackType: StackType /// split type
+    let ratios : [Float] /// original ratios asked by the caller
+    var offsets : [Int] /// translation into character offsets
     
+    /// function that translates and rounds ratios to offsets (to avoid code duplication)
+    /// - Parameters:
+    ///   - length: total width or height to split
+    ///   - ratios: ratios to apply
+    /// - Returns: the offsets
     static func offsetsFromRatios(length: Int, ratios: [Float]) -> [Int] {
         if ratios.isEmpty { return [] }
         
@@ -25,20 +35,31 @@ public class TermMultiWindow : TermWindow {
         var lengthes = [Int]()
         lengthes.append(0)
         currentlyUsed = Int((ratios[0] * totalLength)/totalRatio)
+        lengthes.append(currentlyUsed)
         for i in 1..<(ratios.count - 1) {
-            let value = Int((ratios[i] * totalLength)/totalRatio)
+            let value = Int((ratios[i] * totalLength)/totalRatio) + currentlyUsed
             lengthes.append(value)
             currentlyUsed += value
         }
-        lengthes.append(length-currentlyUsed)
+//        if ratios.count > 2 {
+//            lengthes.append(currentlyUsed)
+//        }
         
         return lengthes
     }
     
+    /// Convenience initializer to switch from variadic parameters to arrays
+    /// - See init for details on the parameters
     convenience init(stack: StackType, ratios lrat: [Float], _ subs: TermWindow...) throws {
         try self.init(stack: stack, ratios: lrat, subs)
     }
     
+    /// Standard initializer
+    /// - Parameters:
+    ///   - stack: vertical or horizontal
+    ///   - ratios: the ratios to apply
+    ///   - subs: the terminal windows that will compose this stack
+    /// - Throws: if there is a mismatch in windows and ratios, of if a ratio is 0, or any other configuration error
     init(stack: StackType, ratios lrat: [Float], _ subs: [TermWindow]) throws {
         if subs.count < 2 { throw ConfigurationError() }
         if lrat.count != subs.count { throw ConfigurationError() }
@@ -57,6 +78,12 @@ public class TermMultiWindow : TermWindow {
         colsDidChange()
     }
     
+    /// Publicly exposed initializer
+    ///   - stack: vertical or horizontal
+    ///   - ratios: the ratios to apply
+    ///   - subs: the terminal windows that will compose this stack
+    /// - Throws: if there is a mismatch in windows and ratios, of if a ratio is 0, or any other configuration error
+    /// - Returns: a fully initialized stack of subwindows
     public static func setup(stack: StackType, ratios lrat: [Float], _ subs: TermWindow...) throws -> TermMultiWindow {
         return try TermMultiWindow(stack: stack, ratios: lrat, subs)
     }
@@ -182,7 +209,9 @@ public class TermMultiWindow : TermWindow {
     }
     
     /// Draws a box around the screen
-    /// - Parameter style: the box style (default `.simple`)
+    /// - Parameters:
+    ///    - id: the id of the subwindow to box
+    ///    - style: the box style (default `.simple`)
     public func boxWindow(id: UUID, _ style: BoxType = .simple) {
         let (ofX,ofY,width,height) = rectangle(for: id)
         switch style {
