@@ -8,6 +8,31 @@ public struct TermCharacter
 
 Basic "pixel" like structure
 
+## Properties
+### `char`
+
+```swift
+var char : Character
+```
+
+the character
+
+### `color`
+
+```swift
+var color : TermColor
+```
+
+the color
+
+### `styles`
+
+```swift
+var styles : [TermStyle]
+```
+
+the styles
+
 ## Methods
 ### `init(_:color:styles:)`
 

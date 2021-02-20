@@ -56,3 +56,9 @@ case CLEARSCR = "\u{001B}[2J"
 ```swift
 case CLEARFROMCSR = "\u{001B}[0J"
 ```
+
+### `CLEARLINE`
+
+```swift
+case CLEARLINE = "\u{001B}[2K"
+```

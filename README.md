@@ -40,6 +40,7 @@ USAGE: term-plot [--presentation] [--demo] [--file <file>] [--m-color <m-color>]
 OPTIONS:
   --presentation            Runs the animation presentation 
   --demo                    Runs the demo 
+  --multi                 Runs the multiple windows demo 
   -f, --file <file>         The file to read from. If absent, will read from standard input 
   -m, --m-color <m-color>   Monochrome color to use (default: light_red). Mutually exclusive with other color options 
   -q, --q-colors <q-colors> Quarter colors to use (default: green,blue,yellow,red). Mutually exclusive with other color options 
@@ -63,11 +64,13 @@ Most of the options are self-explanatory:
   + `line`: straight up line showing the data
   + `dots`: less convincing (to me) but has its uses. A dot is put in at the correct height for each column.
   
-The `--demo` and `--presentation` are non-interactive showcases, because I like whimsy.
+The `--demo`, `--multi`, and `--presentation` are non-interactive showcases, because I like whimsy.
 
 ## The library
 
 Because I will be using this in other projects, I need it to exist as a library I can load. The executable is essentially a demo to show how to use the library. 
+
+More information (⚠️ dev-heavy stuff ⚠️) can be found in the [Documentation](Docs/)
 
 The main classes/concepts are as follows:
 
@@ -82,6 +85,10 @@ Singleton used for window and cursor manipulation. This is where most of the low
 Base class that exposes the utilities found in `TermHandler`, and sets up / restores the TTY when the program actually runs. It is also home to the mechanic used in the other implementations: the request then blit of the buffer, through `requestBuffer`/`requestStyledBuffer` and `draw`.
 
 I decided to go this route rather than direct-access, because of the way my brain works, but your mileage may vary, obviously.
+
+### TermMultiWindow
+
+Variant of a `TermWindow` that handles composition with stacks. A list of sub windows, and their respective ratios, is all that's needed.
 
 ### StandardSeriesWindow
 

@@ -8,6 +8,23 @@ public class TimeSeriesWindow : StandardSeriesWindow
 
 Series variant based ton timer ticks
 
+## Properties
+### `sourceTimer`
+
+```swift
+var sourceTimer : Timer?
+```
+
+the timer that will repeatedly call the input block
+
+### `sourceBlock`
+
+```swift
+var sourceBlock : ()->Double
+```
+
+the block in charge of getting new values
+
 ## Methods
 ### `init(tick:total:)`
 
