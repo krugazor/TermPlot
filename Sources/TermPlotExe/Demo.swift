@@ -179,7 +179,7 @@ func doMultiDemo() {
         return Double(random)
     }
     series1.seriesColor = .monochrome(.light_cyan)
-    series1.boxStyle = .none
+    series1.boxStyle = .simple
 
     var v2 = 1
     let series2 = TimeSeriesWindow(tick: 0.25, total: 8) {
@@ -189,7 +189,7 @@ func doMultiDemo() {
         return Double(random)
     }
     series2.seriesColor = .monochrome(.light_red)
-    series2.boxStyle = .none
+    series2.boxStyle = .simple
     series2.seriesStyle = .line
 
     guard let multi = try? TermMultiWindow.setup(stack: .vertical, ratios: [0.5,0.5], series1,series2) else {
