@@ -189,7 +189,7 @@ func doMultiDemo() {
         return Double(random)
     }
     series2.seriesColor = .monochrome(.light_red)
-    series2.boxStyle = .none
+    series2.boxStyle = .ticked
     series2.seriesStyle = .line
 
     var v3 = 1
