@@ -189,9 +189,9 @@ public class TermMultiWindow : TermWindow {
             handler(&buffer)
 
             if stackType == .horizontal {
-                draw(buffer, offset: (offsets[idx],0))
+                draw(buffer, offset: (offsets[idx],0), clearSkip: false)
             } else {
-                draw(buffer, offset: (0,offsets[idx]))
+                draw(buffer, offset: (0,offsets[idx]), clearSkip: false)
             }
         default:
             var buffer = [[TermCharacter]](repeating: [TermCharacter](repeating: TermCharacter(), count: width-2), count: height-2)
@@ -200,9 +200,9 @@ public class TermMultiWindow : TermWindow {
             boxScreen(box)
             
             if stackType == .horizontal {
-                draw(buffer, offset: (1+offsets[idx],1))
+                draw(buffer, offset: (1+offsets[idx],1), clearSkip: false)
             } else {
-                draw(buffer, offset: (1,1+offsets[idx]))
+                draw(buffer, offset: (1,1+offsets[idx]),clearSkip: false)
             }
         }
     }

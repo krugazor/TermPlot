@@ -202,3 +202,16 @@ public class TermHandler {
     /// Unlocks the v-blank
     public func unlock() {screenLock.unlock() }
 }
+
+// For debug purposes
+extension Array where Element == TermCharacter {
+    public func debugString() -> String {
+        return self.map({ String($0.char) }).joined(separator: "")
+    }
+}
+
+extension Array where Element == [TermCharacter] {
+    public func debugString() -> String {
+        return self.map( { $0.debugString() }).joined(separator: "\n")
+    }
+}
