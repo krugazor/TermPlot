@@ -66,6 +66,8 @@ public class TermMultiWindow : TermWindow {
         for win in subwindows {
             if let win = win as? StandardSeriesWindow {
                 win.start()
+            } else if let win = win as? TermMultiWindow {
+                win.start()
             }
         }
     }
@@ -74,6 +76,8 @@ public class TermMultiWindow : TermWindow {
     public func stop() {
         for win in subwindows {
             if let win = win as? StandardSeriesWindow {
+                win.stop()
+            } else if let win = win as? TermMultiWindow {
                 win.stop()
             }
         }
@@ -104,40 +108,127 @@ public class TermMultiWindow : TermWindow {
     }
     
     override func rowsDidChange() {
-        if stackType == .vertical {
-            offsets = TermMultiWindow.offsetsFromRatios(length: rows, ratios: ratios)
+        DispatchQueue.global().async { [self] in
+            TermHandler.shared.lock()
+            if stackType == .vertical {
+                offsets = TermMultiWindow.offsetsFromRatios(length: rows, ratios: ratios)
+            }
+            
+            rectangleCache.removeAll()
+            sizeDidChange()
+            TermHandler.shared.unlock()
         }
-        sizeDidChange()
     }
     
     override func colsDidChange() {
-        if stackType == .horizontal {
-            offsets = TermMultiWindow.offsetsFromRatios(length: cols, ratios: ratios)
+        DispatchQueue.global().async { [self] in
+            TermHandler.shared.lock()
+            if stackType == .horizontal {
+                offsets = TermMultiWindow.offsetsFromRatios(length: cols, ratios: ratios)
+            }
+            rectangleCache.removeAll()
+            sizeDidChange()
+            TermHandler.shared.unlock()
         }
-        sizeDidChange()
     }
     
-    public override func requestBuffer(for sub: TermWindow, box: TermWindow.BoxType = .simple, _ handler: (inout [[Character]]) -> Void) {
-        guard let idx = subwindows.firstIndex(where: { $0.wid == sub.wid }) else { return }
+    /// rectangle cache to avoid computing it every time
+    /// invalidated on screen size change
+    var rectangleCache : [UUID:(x: Int, y: Int, width: Int, height: Int)] = [:]
+    
+    /// Gets the coordinates for the subwindow
+    /// - Parameter id: the id of the window to get coords for
+    /// - Returns: the offsets, width, and height
+    func rectangle(for id: UUID) -> (x: Int, y: Int, width: Int, height: Int) {
+        if let cached = rectangleCache[id] { return cached }
+        guard let idx = subwindows.firstIndex(where: { $0.wid == id }) else { return (0,0,0,0) }
+        var offsetX: Int
+        var offsetY: Int
         var height : Int
         var width: Int
         
         if stackType == .horizontal {
             height = rows
+            offsetY = 0
             if idx == offsets.count-1 { // last
-                width = cols - offsets.last!
+                offsetX = offsets.last!
+                width = cols - offsetX
             } else {
-                width = offsets[idx+1] - offsets[idx]
+                offsetX = offsets[idx]
+                width = offsets[idx+1] - offsetX
             }
         } else { // vertical
             width = cols
+            offsetX = 0
             if idx == offsets.count-1 { // last
-                height = rows - offsets.last!
+                offsetY = offsets.last!
+                height = rows - offsetY
             } else {
-                height = offsets[idx+1] - offsets[idx]
+                offsetY = offsets[idx]
+                height = offsets[idx+1] - offsetY
             }
         }
+
+        let result = (offsetX,offsetY,width,height)
+        rectangleCache[id] = result
+        return result
+    }
+    
+    /// Draws a box around the screen
+    /// - Parameter style: the box style (default `.simple`)
+    public func boxWindow(id: UUID, _ style: BoxType = .simple) {
+        let (ofX,ofY,width,height) = rectangle(for: id)
+        switch style {
+        case .none:
+            return
+        default:
+            break
+        } // the issue with enums that have associated values is you can't test them with == anymore
         
+        TermHandler.shared.lock()
+        TermHandler.shared.set(TermColor.default, style: TermStyle.default)
+        
+        TermHandler.shared.moveCursor(toX: 1+ofX, y: 1+ofY)
+        // top line
+        for _ in 1...width { stdout(DisplaySymbol.horz_top.withStyle(.line)) }
+        for y in 2...(height-1) {
+            TermHandler.shared.moveCursor(toX: 1+ofX, y: y+ofY)
+            stdout(DisplaySymbol.vert_left.withStyle(.line))
+            TermHandler.shared.moveCursor(toX: width+ofX, y: y+ofY)
+            stdout(DisplaySymbol.vert_left.withStyle(.line))
+        }
+        TermHandler.shared.moveCursor(toX: 1+ofX, y: height+ofY)
+        for _ in 1...width { stdout(DisplaySymbol.horz_top.withStyle(.line)) }
+        TermHandler.shared.set(.default, style: .default)
+        TermHandler.shared.unlock()
+        
+        switch style {
+        case .ticked(let colTicks, let rowTicks):
+            for (col,str) in colTicks {
+                if col + str.count >= width { break } // sorry, won't go there
+                TermHandler.shared.moveCursor(toX: col+ofX, y: height+ofY)
+                stdout(DisplaySymbol.tick_up.withStyle(.line)+str.apply(.default, style: .default))
+            }
+            for (row,str) in rowTicks {
+                if row >= width { break } // ditto
+                TermHandler.shared.moveCursor(toX: 1+ofX, y: row+ofY)
+                stdout(DisplaySymbol.tick_left.withStyle(.line)+str.apply(.default, style: .default))
+            }
+            break
+        default:
+            break
+        } // ditto
+    }
+
+    public override func requestBuffer(for sub: TermWindow, box: TermWindow.BoxType = .simple, _ handler: (inout [[Character]]) -> Void) {
+        guard let idx = subwindows.firstIndex(where: { $0.wid == sub.wid }) else { return }
+        var ofX : Int
+        var ofY : Int
+        var height : Int
+        var width: Int
+        
+        (ofX,ofY,width,height) = rectangle(for: sub.wid)
+                
         switch box {
         case .none:
             var buffer = [[Character]](repeating: [Character](repeating: " ", count: width), count: height)
@@ -152,7 +243,8 @@ public class TermMultiWindow : TermWindow {
             var buffer = [[Character]](repeating: [Character](repeating: " ", count: width-2), count: height-2)
             handler(&buffer)
             
-            boxScreen(box)
+            // boxScreen(box)
+            boxWindow(id: sub.wid, box)
             
             if stackType == .horizontal {
                 draw(buffer, offset: (1+offsets[idx],1))
@@ -164,25 +256,13 @@ public class TermMultiWindow : TermWindow {
     
     public override func requestStyledBuffer(for sub: TermWindow, box: TermWindow.BoxType = .simple, _ handler: (inout [[TermCharacter]]) -> Void) {
         guard let idx = subwindows.firstIndex(where: { $0.wid == sub.wid }) else { return }
+        var ofX : Int
+        var ofY : Int
         var height : Int
         var width: Int
         
-        if stackType == .horizontal {
-            height = rows
-            if idx == offsets.count-1 { // last
-                width = cols - offsets.last!
-            } else {
-                width = offsets[idx+1] - offsets[idx]
-            }
-        } else { // vertical
-            width = cols
-            if idx == offsets.count-1 { // last
-                height = rows - offsets.last!
-            } else {
-                height = offsets[idx+1] - offsets[idx]
-            }
-        }
-        
+        (ofX,ofY,width,height) = rectangle(for: sub.wid)
+
         switch box {
         case .none:
             var buffer = [[TermCharacter]](repeating: [TermCharacter](repeating: TermCharacter(), count: width), count: height)
@@ -197,8 +277,9 @@ public class TermMultiWindow : TermWindow {
             var buffer = [[TermCharacter]](repeating: [TermCharacter](repeating: TermCharacter(), count: width-2), count: height-2)
             handler(&buffer)
             
-            boxScreen(box)
-            
+            // boxScreen(box)
+            boxWindow(id: sub.wid, box)
+
             if stackType == .horizontal {
                 draw(buffer, offset: (1+offsets[idx],1), clearSkip: false)
             } else {
