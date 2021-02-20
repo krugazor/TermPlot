@@ -169,6 +169,13 @@ public class TermMultiWindow : TermWindow {
             }
         }
 
+        // compound if necessary
+        if let superwindow = embeddedIn as? TermMultiWindow {
+            let (myofx, myofy,_,_) = superwindow.rectangle(for: self.wid)
+            offsetX += myofx
+            offsetY += myofy
+        }
+        
         let result = (offsetX,offsetY,width,height)
         rectangleCache[id] = result
         return result
@@ -235,9 +242,9 @@ public class TermMultiWindow : TermWindow {
             handler(&buffer)
 
             if stackType == .horizontal {
-                draw(buffer, offset: (offsets[idx],0))
+                draw(buffer, offset: (offsets[idx]+ofX,0+ofY))
             } else {
-                draw(buffer, offset: (0,offsets[idx]))
+                draw(buffer, offset: (0+ofX,offsets[idx]+ofY))
             }
         default:
             var buffer = [[Character]](repeating: [Character](repeating: " ", count: width-2), count: height-2)
@@ -247,9 +254,9 @@ public class TermMultiWindow : TermWindow {
             boxWindow(id: sub.wid, box)
             
             if stackType == .horizontal {
-                draw(buffer, offset: (1+offsets[idx],1))
+                draw(buffer, offset: (1+offsets[idx]+ofX,1+ofY))
             } else {
-                draw(buffer, offset: (1,1+offsets[idx]))
+                draw(buffer, offset: (1+ofX,1+offsets[idx]+ofY))
             }
         }
     }
@@ -269,9 +276,9 @@ public class TermMultiWindow : TermWindow {
             handler(&buffer)
 
             if stackType == .horizontal {
-                draw(buffer, offset: (offsets[idx],0), clearSkip: false)
+                draw(buffer, offset: (ofX,0+ofY), clearSkip: false)
             } else {
-                draw(buffer, offset: (0,offsets[idx]), clearSkip: false)
+                draw(buffer, offset: (0+ofX,ofY), clearSkip: false)
             }
         default:
             var buffer = [[TermCharacter]](repeating: [TermCharacter](repeating: TermCharacter(), count: width-2), count: height-2)
@@ -281,9 +288,9 @@ public class TermMultiWindow : TermWindow {
             boxWindow(id: sub.wid, box)
 
             if stackType == .horizontal {
-                draw(buffer, offset: (1+offsets[idx],1), clearSkip: false)
+                draw(buffer, offset: (1+ofX,1+ofY), clearSkip: false)
             } else {
-                draw(buffer, offset: (1,1+offsets[idx]),clearSkip: false)
+                draw(buffer, offset: (1+ofX,1+ofY),clearSkip: false)
             }
         }
     }
