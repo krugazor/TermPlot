@@ -169,3 +169,60 @@ func doSeriesDemo() {
     series.start()
     RunLoop.current.run(until: Date.distantFuture)
 }
+
+func doMultiDemo() {
+    var v1 = 1
+    let series1 = TimeSeriesWindow(tick: 0.25, total: 8) {
+        v1 += 1
+        v1 = v1 % 5
+        let random = Int.random(in: 0...v1)
+        return Double(random)
+    }
+    series1.seriesColor = .quarters(.cyan, .yellow, .red, .white)
+    series1.boxStyle = .simple
+
+    var v2 = 1
+    let series2 = TimeSeriesWindow(tick: 0.25, total: 8) {
+        v2 += 1
+        v2 = v2 % 5
+        let random = Int.random(in: 0...v2)
+        return Double(random)
+    }
+    series2.seriesColor = .monochrome(.light_red)
+    series2.boxStyle = .ticked
+    series2.seriesStyle = .line
+
+    var v3 = 1
+    let series3 = TimeSeriesWindow(tick: 0.25, total: 8) {
+        v3 += 1
+        v3 = v3 % 5
+        let random = Int.random(in: 0...v3)
+        return Double(random)
+    }
+    series3.seriesColor = .monochrome(.light_yellow)
+    series3.boxStyle = .simple
+    series3.seriesStyle = .dot
+
+    var v4 = 1
+    let series4 = TimeSeriesWindow(tick: 0.25, total: 8) {
+        v4 += 1
+        v4 = v4 % 5
+        let random = Int.random(in: 0...v4)
+        return Double(random)
+    }
+    series4.seriesColor = .monochrome(.light_yellow)
+    series4.boxStyle = .simple
+    series4.seriesStyle = .line
+
+    guard let submulti = try? TermMultiWindow.setup(stack: .horizontal, ratios: [0.5,0.25,0.25], series1,series3,series4) else {
+        print("failed to setup multi-windows")
+        return
+    }
+    guard let multi = try? TermMultiWindow.setup(stack: .vertical, ratios: [0.75,0.25], series2,submulti) else {
+        print("failed to setup multi-windows")
+        return
+    }
+    multi.start()
+    RunLoop.current.run(until: Date.distantFuture)
+
+}

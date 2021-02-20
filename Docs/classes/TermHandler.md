@@ -25,7 +25,48 @@ public fileprivate(set) var rows = 43
 
 lines in the current instance
 
+### `windowResizedAction`
+
+```swift
+var windowResizedAction : ((TermHandler)->Void)?
+```
+
+block to call in the event of window resizing
+not the most elegant, but I cannot have labels on the arguments
+
+### `screenLock`
+
+```swift
+var screenLock = NSLock()
+```
+
+the "v-sync" lock
+
+### `_instance`
+
+```swift
+static var _instance : TermHandler?
+```
+
+private singleton instance
+
+### `shared`
+
+```swift
+static public var shared : TermHandler
+```
+
+public shared singleton
+
 ## Methods
+### `init()`
+
+```swift
+init()
+```
+
+private-ish initializer for the singleton
+
 ### `trap(signal:action:)`
 
 ```swift

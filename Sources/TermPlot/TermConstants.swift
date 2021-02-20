@@ -70,6 +70,7 @@ public enum TermControl : String {
     case BACK = "\u{001B}[D"
     case CLEARSCR = "\u{001B}[2J"
     case CLEARFROMCSR = "\u{001B}[0J"
+    case CLEARLINE = "\u{001B}[2K"
 }
 
 // MARK: Display Characters

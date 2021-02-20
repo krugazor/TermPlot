@@ -45,13 +45,13 @@ public class TermWindow {
     /// have we setup the TTY?
     fileprivate var setup = false // until we do anything, no need to reserve space
     /// number of rows in the buffer
-    public private(set) var rows: Int {
+    public internal(set) var rows: Int {
         didSet {
             rowsDidChange()
         }
     }
     /// number of columns in the buffer
-    public private(set) var cols: Int {
+    public internal(set) var cols: Int {
         didSet {
             colsDidChange()
         }
@@ -60,6 +60,12 @@ public class TermWindow {
     fileprivate var currentBox : (cols: Int, rows: Int) = (0,0) // ditto
     /// remnants from earlier experiments about lessening the number of redraws
     fileprivate var cursorPosition : (x: Int, y: Int) = (0,0)
+    
+    /// unique ID to make sure we're talking about the same windows
+    let wid = UUID()
+    
+    /// if a window is embedded in another
+    var embeddedIn: TermWindow?
     
     /// Function called when screen size changes
     func rowsDidChange() {
@@ -71,15 +77,50 @@ public class TermWindow {
         // for override purposes
     }
     
+    /// function used to determine the width/height we should give our children windows
+    /// as it mostly is for multiterms, this will likely return the size of the terminal
+    /// will need to be overridden
+    ///
+    /// - Parameter for : the term to look for in children
+    ///
+    /// - Returns: the expected size this window will occupy
+    func size(for: TermWindow) -> (width: Int, height: Int) {
+        if let emi = embeddedIn {
+            return emi.size(for: self) // pass the buck upstrairs
+        } else {
+            return (TermHandler.shared.rows,TermHandler.shared.cols)
+        }
+    }
+    
+    /// function used to determine the width/height we should give our children windows
+    /// as it mostly is for multiterms, this will likely return the size of the terminal
+    /// will need to be overridden
+    ///
+    /// - Parameter for : the term uuid to look for in children
+    ///
+    /// - Returns: the expected size this window will occupy
+    func size(for: UUID) -> (width: Int, height: Int) {
+        if let emi = embeddedIn {
+            return emi.size(for: self) // pass the buck upstrairs
+        } else {
+            return (TermHandler.shared.rows,TermHandler.shared.cols)
+        }
+    }
+
+    
     /// Default initializer
-    init() {
-        rows = TermHandler.shared.rows
-        cols = TermHandler.shared.cols
+    init(embedIn: TermWindow? = nil) {
+        embeddedIn = embedIn
         
-        self.clearScreen()
+        if let emi = embedIn {
+            (rows,cols) = emi.size(for: wid)
+        } else {
+            rows = TermHandler.shared.rows
+            cols = TermHandler.shared.cols
+            self.clearScreen()
+        }
         TermHandler.shared.windowResizedAction = { thndlr in
-            self.rows = TermHandler.shared.rows
-            self.cols = TermHandler.shared.cols
+            (self.rows, self.cols) = self.size(for: self)
         }
     }
     
@@ -216,7 +257,7 @@ public class TermWindow {
         
         TermHandler.shared.lock()
         TermHandler.shared.set(TermColor.default, style: TermStyle.default)
-        clearScreen()
+        if embeddedIn == nil { clearScreen() }
         
         TermHandler.shared.moveCursor(toX: 1, y: 1)
         // top line
@@ -254,13 +295,13 @@ public class TermWindow {
     /// - Parameters:
     ///   - buffer: the buffer to output
     ///   - offset: the offset at which to start on screen
-    func draw(_ buffer: [[Character]], offset: (Int,Int) = (0,0)) {
+    func draw(_ buffer: [[Character]], offset: (Int,Int) = (0,0), clearSkip: Bool = true) {
         TermHandler.shared.lock()
         TermHandler.shared.moveCursor(toX: offset.0, y: offset.1)
         var crow = offset.1+1
         for row in buffer {
             for char in row {
-                if char != " " {
+                if !clearSkip || char != " " {
                     stdout(String(char))
                 } else {
                     TermHandler.shared.moveCursorRight(1)
@@ -277,13 +318,13 @@ public class TermWindow {
     /// - Parameters:
     ///   - buffer: the buffer to output
     ///   - offset: the offset at which to start on screen
-    func draw(_ buffer: [[TermCharacter]], offset: (Int,Int) = (0,0)) {
+    func draw(_ buffer: [[TermCharacter]], offset: (Int,Int) = (0,0), clearSkip: Bool = true) {
         TermHandler.shared.lock()
         TermHandler.shared.moveCursor(toX: 1+offset.0, y: 1+offset.1)
         var crow = offset.1+1
         for row in buffer {
             for char in row {
-                if char.char != " " {
+                if !clearSkip || char.char != " " {
                     TermHandler.shared.set(char.color, styles: char.styles)
                     stdout(String(char.char))
                 } else {
@@ -298,10 +339,59 @@ public class TermWindow {
     }
     
     /// Reserve and callback mechanic to draw on screen: a buffer is generated according to the current size, then filled by the block, then blit
+    /// In this particular case, does nothing, as regular windows don't have subwindows
+    /// - Parameters:
+    ///   - for: the window requesting a buffer
+    ///   - box: should we box the screen?
+    ///   - handler: the block that will fill the buffer
+    public func requestBuffer(for sub: TermWindow, box: BoxType = .simple, _ handler: (inout [[Character]])->Void) {
+        switch box {
+        case .none:
+            var buffer = [[Character]](repeating: [Character](repeating: " ", count: cols), count: rows)
+            handler(&buffer)
+
+            draw(buffer)
+        default:
+            var buffer = [[Character]](repeating: [Character](repeating: " ", count: cols-2), count: rows-2)
+            handler(&buffer)
+            
+            boxScreen(box)
+            
+            draw(buffer, offset: (1,1))
+        }
+    }
+
+    /// Reserve and callback mechanic to draw on screen: a buffer is generated according to the current size, then filled by the block, then blit
+    /// In this particular case, does nothing, as regular windows don't have subwindows
+    /// - Parameters:
+    ///   - for: the window requesting a buffer
+    ///   - box: should we box the screen?
+    ///   - handler: the block that will fill the buffer
+    public func requestStyledBuffer(for sub: TermWindow, box: BoxType = .simple, _ handler: (inout [[TermCharacter]])->Void) {
+        switch box {
+        case .none:
+            var buffer = [[TermCharacter]](repeating: [TermCharacter](repeating: TermCharacter(), count: cols), count: rows)
+            handler(&buffer)
+
+            draw(buffer)
+        default:
+            var buffer = [[TermCharacter]](repeating: [TermCharacter](repeating: TermCharacter(), count: cols-2), count: rows-2)
+            handler(&buffer)
+            
+            boxScreen(box)
+            draw(buffer, offset: (1,1))
+        }
+    }
+
+    /// Reserve and callback mechanic to draw on screen: a buffer is generated according to the current size, then filled by the block, then blit
     /// - Parameters:
     ///   - box: should we box the screen?
     ///   - handler: the block that will fill the buffer
     public func requestBuffer(box: BoxType = .simple, _ handler: (inout [[Character]])->Void) {
+        if let emi = embeddedIn {
+            emi.requestBuffer(for: self, box: box, handler)
+            return
+        }
         switch box {
         case .none:
             var buffer = [[Character]](repeating: [Character](repeating: " ", count: cols), count: rows)
@@ -323,7 +413,11 @@ public class TermWindow {
     ///   - box: should we box the screen?
     ///   - handler: the block that will fill the buffer
     public func requestStyledBuffer(box: BoxType = .simple, _ handler: (inout [[TermCharacter]])->Void) {
-        switch box {
+        if let emi = embeddedIn {
+            emi.requestStyledBuffer(for: self, box: box, handler)
+            return
+        }
+       switch box {
         case .none:
             var buffer = [[TermCharacter]](repeating: [TermCharacter](repeating: TermCharacter(), count: cols), count: rows)
             handler(&buffer)
