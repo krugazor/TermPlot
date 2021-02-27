@@ -20,6 +20,45 @@ public enum TermColor : Int, CaseIterable {
     case white = 7
     case light_white = 67
     case `default` = 9
+    
+    var asRGB : (r: Float, g: Float, b: Float)? {
+        switch self {
+        case .black:
+            return (0,0,0)
+        case .light_black:
+            return (0,0,0)
+        case .red:
+            return (255,0,0)
+        case .light_red:
+            return (194,54,33)
+        case .green:
+            return (0,255,0)
+        case .light_green:
+            return (37,188,36)
+        case .yellow:
+            return (255,255,0)
+        case .light_yellow:
+            return (173,173,39)
+        case .blue:
+            return (0,0,255)
+        case .light_blue:
+            return (73,46,225)
+        case .magenta:
+            return (255,0,255)
+        case .light_magenta:
+            return (211,56,211)
+        case .cyan:
+            return (0,255,255)
+        case .light_cyan:
+            return (51,187,200)
+        case .white:
+            return (255,255,255)
+        case .light_white:
+            return (203,204,205)
+        case .default:
+            return nil
+        }
+    }
 }
 
 /// The ANSI styles (self explanatory)

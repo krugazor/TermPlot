@@ -20,8 +20,10 @@ final class TermPlotTests: XCTestCase {
 
     func testUtils() {
         print("This test is highly unreliable...")
+        #if os(macOS)
         let (c,r) = TermSize()
         print("\(c) cols x \(r) rows")
+        #endif
         let (c2,r2) = TermSize2()
         print("\(c2) cols x \(r2) rows")
         print("10s of listening to size changes...")
