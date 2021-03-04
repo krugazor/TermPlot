@@ -28,33 +28,33 @@ public enum TermColor : Int, CaseIterable {
         case .light_black:
             return (0,0,0)
         case .red:
-            return (255,0,0)
+            return (255/255,0,0)
         case .light_red:
-            return (194,54,33)
+            return (194/255,54/255,33/255)
         case .green:
-            return (0,255,0)
+            return (0,255/255,0)
         case .light_green:
-            return (37,188,36)
+            return (37/255,188/255,36/255)
         case .yellow:
-            return (255,255,0)
+            return (255/255,255/255,0)
         case .light_yellow:
-            return (173,173,39)
+            return (173/255,173/255,39/255)
         case .blue:
-            return (0,0,255)
+            return (0,0,255/255)
         case .light_blue:
-            return (73,46,225)
+            return (73/255,46/255,225/255)
         case .magenta:
-            return (255,0,255)
+            return (255/255,0,255/255)
         case .light_magenta:
-            return (211,56,211)
+            return (211/255,56/255,211/255)
         case .cyan:
-            return (0,255,255)
+            return (0,255/255,255/255)
         case .light_cyan:
-            return (51,187,200)
+            return (51/255,187/255,200/255)
         case .white:
-            return (255,255,255)
+            return (255/255,255/255,255/255)
         case .light_white:
-            return (203,204,205)
+            return (203/255,204/255,205/255)
         case .default:
             return nil
         }
