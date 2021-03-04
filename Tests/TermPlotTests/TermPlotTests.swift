@@ -1,6 +1,13 @@
 import XCTest
 @testable import TermPlot
 
+#if os(macOS)
+import AppKit
+#elseif os(iOS)
+import UIKit
+#endif
+
+
 final class TermPlotTests: XCTestCase {
     func testColors() {
         for s in TermStyle.allCases {
@@ -118,7 +125,7 @@ final class TermPlotTests: XCTestCase {
         RunLoop.current.run(until: Date(timeIntervalSinceNow: 60))
 
     }
-
+    
     static var allTests = [
         ("testColors", testColors),
         ("testCharacters", testCharacters),

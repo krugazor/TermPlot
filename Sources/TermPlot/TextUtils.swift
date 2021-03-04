@@ -26,7 +26,7 @@ func approximateColor(_ col: NSColor?) -> TermColor {
         }).sorted { (arg0, arg1) -> Bool in
             let (_,dsq0) = arg0
             let (_,dsq1) = arg1
-            return dsq0 > dsq1
+            return dsq0 < dsq1
         }
         return distances.first?.0 ?? .default
     }
@@ -57,7 +57,7 @@ func approximateColor(_ col: UIColor?) -> TermColor {
     let r = Float(rr)
     let g = Float(gg)
     let b = Float(bb)
-
+    
     let distances = colorMappings.compactMap({ arg0 -> (TermColor, Float)? in
         let (tcol,trgb) : (TermColor,(Float,Float,Float)?) = arg0
         if let (tr,tg,tb) = trgb {
@@ -69,7 +69,7 @@ func approximateColor(_ col: UIColor?) -> TermColor {
     }).sorted { (arg0, arg1) -> Bool in
         let (_,dsq0) = arg0
         let (_,dsq1) = arg1
-        return dsq0 > dsq1
+        return dsq0 < dsq1
     }
     return distances.first?.0 ?? .default
 }
@@ -86,16 +86,16 @@ extension UIFont {
 #endif
 
 
-func mapAttributes(_ text: NSAttributedString) -> [(TermColor,TermStyle,String)] {
+public func mapAttributes(_ text: NSAttributedString) -> [(TermColor,TermStyle,String)] {
     var result = [(TermColor,TermStyle,String)]()
     
     var cursor = 0
     while cursor < text.length {
-        let effectiveRange : NSRangePointer? = nil
-        let attributes = text.attributes(at: cursor, longestEffectiveRange: effectiveRange, in: NSRange(location: cursor, length: text.length-cursor))
+        var effectiveRange = NSRange(location: 0,length: 0)
+        let attributes = text.attributes(at: cursor, longestEffectiveRange: &effectiveRange, in: NSRange(location: cursor, length: text.length-cursor))
         
         let tcol : TermColor
-        if let scolor = attributes[NSAttributedString.Key("foregroundColor")] { // I hate this with PASSION
+        if let scolor = attributes[NSAttributedString.Key("NSColor")] { // I hate this with PASSION
             #if os(macOS)
             tcol = approximateColor(scolor as? NSColor)
             #elseif os(iOS)
@@ -106,7 +106,7 @@ func mapAttributes(_ text: NSAttributedString) -> [(TermColor,TermStyle,String)]
         }
         
         let tstyle : TermStyle
-        if let sfont = attributes[NSAttributedString.Key("font")] { // I hate this with PASSION
+        if let sfont = attributes[NSAttributedString.Key("NSFont")] { // I hate this with PASSION
             #if os(macOS)
             if (sfont as? NSFont)?.isBold ?? false {
                 tstyle = .bold
@@ -127,13 +127,10 @@ func mapAttributes(_ text: NSAttributedString) -> [(TermColor,TermStyle,String)]
         } else {
             tstyle = .default
         }
-        if let effectiveRange = effectiveRange {
-            let end = effectiveRange.pointee.upperBound
-            cursor = end + 1
-            result.append((tcol,tstyle,text.attributedSubstring(from: effectiveRange.pointee).string))
-        } else {
-            result.append((tcol,tstyle,text.attributedSubstring(from: NSRange(location: cursor, length: text.length-cursor)).string))
-        }
+        let end = effectiveRange.upperBound
+        cursor = end
+        let str = text.attributedSubstring(from: effectiveRange).string.replacingOccurrences(of: "\t", with: " ")
+        result.append((tcol,tstyle,str))
     }
     
     return result

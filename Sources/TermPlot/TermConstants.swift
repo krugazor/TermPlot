@@ -79,7 +79,7 @@ public extension String {
     ///   - style: the style to use
     /// - Returns: a string ready to be output in an ANSI terminal
     func apply(_ color: TermColor, style: TermStyle = .default) -> String {
-        return "\u{001B}[\(color.rawValue + 30)m" + "\u{001B}[\(style.rawValue)m" + self
+        return "\u{001B}[\(style.rawValue)m" + "\u{001B}[\(color.rawValue + 30)m" + self
     }
     /// Creates a string with specified color and style
     /// - Parameters:
@@ -107,6 +107,7 @@ public enum TermControl : String {
     case DOWN = "\u{001B}[B"
     case FORWARD = "\u{001B}[C"
     case BACK = "\u{001B}[D"
+    case NEWLINESTART = "\u{001B}[1E"
     case CLEARSCR = "\u{001B}[2J"
     case CLEARFROMCSR = "\u{001B}[0J"
     case CLEARLINE = "\u{001B}[2K"

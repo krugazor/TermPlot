@@ -1,7 +1,6 @@
 import Foundation
 import TermPlot
 
-
 func fillpart1( _ buffer: inout [[TermCharacter]], _ frame: Int) {
     // text IS IT / A BIRD / ?
     let rows = buffer.count
@@ -224,5 +223,47 @@ func doMultiDemo() {
     }
     multi.start()
     RunLoop.current.run(until: Date.distantFuture)
+
+}
+
+func doStyles() {
+    #if os(macOS)
+    if let data = try? Data(contentsOf: URL(string: "https://krugazor.eu/test.html")!),
+       let html = NSAttributedString(html: data,
+                                     baseURL: URL(string: "https://krugazor.eu/test.html")!,
+                                     documentAttributes: nil) {
+        let attrs = mapAttributes(html).map({ (arg0) -> (TermColor, TermStyle, String) in
+            // html is weird and weirdly supported by nsattributedstring
+            let tcol = arg0.0
+            let tsty = arg0.1
+            let ttxt = arg0.2
+            if tcol == .black { return (.default, tsty, ttxt) }
+            else { return (tcol, tsty, ttxt) }
+        }).filter({ $0.2.trimmingCharacters(in: CharacterSet.newlines).count > 0 })
+        
+        var win : StandardSeriesWindow? = StandardSeriesWindow(tick: 1, total: 1) // for initialization purposes
+        win?.clearScreen()
+        var pseudoTimer = 0
+        for piece in attrs {
+            for line in piece.2.components(separatedBy: CharacterSet.newlines) {
+                TermHandler.shared.put(s: line, color: piece.0, style: piece.1)
+                TermHandler.shared.moveCursorNewline()
+            }
+            if pseudoTimer % 20 == 0 {
+                TermHandler.shared.moveCursor(toX: 1, y: 1)
+                RunLoop.current.run(until: Date(timeIntervalSinceNow: 3))
+                win?.clearScreen()
+            }
+            TermHandler.shared.set(.default, style: .default)
+            pseudoTimer += 1
+        }
+        win = nil
+        RunLoop.current.run(until: Date(timeIntervalSinceNow: 3))
+    } else {
+        print("no html data available")
+    }
+    #elseif os(iOS)
+    
+    #endif
 
 }

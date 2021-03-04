@@ -128,6 +128,12 @@ public class TermHandler {
     }
     
     // MARK: utility functions
+    /// Moves the cursor down and to the beginning of the line (may not be supported)
+    /// - Parameter amount: the delta
+    public func moveCursorNewline() {
+        stdout(TermControl.NEWLINESTART.rawValue)
+    }
+    
     /// Moves the cursor right by a certain amount
     /// - Parameter amount: the delta
     public func moveCursorRight(_ amount: Int) {
@@ -135,7 +141,7 @@ public class TermHandler {
             stdout(TermControl.FORWARD.rawValue)
         }
     }
-    
+
     /// Moves the cursor left by a certain amount
     /// - Parameter amount: the delta
     public func moveCursorLeft(_ amount: Int) {
