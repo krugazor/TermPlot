@@ -135,3 +135,71 @@ public func mapAttributes(_ text: NSAttributedString) -> [(TermColor,TermStyle,S
     
     return result
 }
+
+public func underestimatedLines(_ txt : [(TermColor,TermStyle,String)]) -> Int {
+    return txt.reduce(0) { $0 + $1.2.components(separatedBy: CharacterSet.newlines).count }
+}
+
+/// From https://stackoverflow.com/questions/33305157/split-string-into-groups-with-specific-length
+extension String {
+    /// Splits a string into groups of `every` n characters, grouping from left-to-right by default. If `backwards` is true, right-to-left.
+    public func split(every: Int, backwards: Bool = false) -> [String] {
+        var result = [String]()
+
+        for i in stride(from: 0, to: self.count, by: every) {
+            switch backwards {
+            case true:
+                let endIndex = self.index(self.endIndex, offsetBy: -i)
+                let startIndex = self.index(endIndex, offsetBy: -every, limitedBy: self.startIndex) ?? self.startIndex
+                result.insert(String(self[startIndex..<endIndex]), at: 0)
+            case false:
+                let startIndex = self.index(self.startIndex, offsetBy: i)
+                let endIndex = self.index(startIndex, offsetBy: every, limitedBy: self.endIndex) ?? self.endIndex
+                result.append(String(self[startIndex..<endIndex]))
+            }
+        }
+
+        return result
+    }
+}
+
+public func fit(_ txt : [(TermColor,TermStyle,String)], in width: Int, lines countLines: Int = 1000) -> [[TermCharacter]] {
+    var result = [[TermCharacter]](repeating: [TermCharacter](repeating: TermCharacter(), count: width), count: countLines)
+    
+    var cursor = 0
+    
+    /// TODO: nicer breaks, like word breaks
+    while cursor < txt.count && cursor < countLines {
+        let currentBufferLine = txt[txt.count - 1 - cursor]
+        let lines = currentBufferLine.2.components(separatedBy: CharacterSet.newlines).filter({ !$0.isEmpty })
+        var splitted = [String]()
+        for line in lines {
+            if line.count > width {
+                splitted.append(contentsOf: line.split(every: width))
+            } else {
+                splitted.append(line)
+            }
+        }
+        
+        // plug into the matrix
+        if splitted.count == 0 {
+            cursor += 1
+        }
+        for splitIdx in 0..<splitted.count {
+            if cursor >= txt.count || cursor >= countLines { break }
+            var tcLine = splitted[splitted.count - 1 - splitIdx].map({ TermCharacter($0, color: currentBufferLine.0, styles: [currentBufferLine.1]) })
+            tcLine = tcLine + [TermCharacter](repeating: TermCharacter(), count: width - tcLine.count)
+            result[result.count-1-cursor] = tcLine
+            cursor += 1
+        }
+    }
+    
+    return result
+}
+
+public func debugPrint(_ buf: [[TermCharacter]]) {
+    for line in buf {
+        let out = line.map({ String($0.char) }).joined()
+        print(out)
+    }
+}

@@ -126,6 +126,22 @@ final class TermPlotTests: XCTestCase {
 
     }
     
+    func testText() {
+        if let data = try? Data(contentsOf: URL(string: "https://krugazor.eu/test.html")!),
+           let html = NSAttributedString(html: data,
+                                         baseURL: URL(string: "https://krugazor.eu/test.html")!,
+                                         documentAttributes: nil) {
+            let lines = underestimatedLines(mapAttributes(html))
+            XCTAssert(lines > 0)
+            
+            let buffer = fit(mapAttributes(html), in: 80, lines: 47)
+            XCTAssert(buffer.count > 0)
+            debugPrint(buffer)
+        } else {
+            XCTFail()
+        }
+    }
+    
     static var allTests = [
         ("testColors", testColors),
         ("testCharacters", testCharacters),
