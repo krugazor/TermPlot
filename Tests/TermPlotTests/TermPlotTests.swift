@@ -1,10 +1,31 @@
 import XCTest
+import LoremSwiftum
 @testable import TermPlot
 
 #if os(macOS)
 import AppKit
 #elseif os(iOS)
 import UIKit
+#endif
+
+#if os(macOS)
+extension NSColor {
+    static var random: NSColor {
+        return NSColor(red: .random(in: 0...1),
+                       green: .random(in: 0...1),
+                       blue: .random(in: 0...1),
+                       alpha: 1.0)
+    }
+}
+#elseif os(iOS)
+extension UIColor {
+    static var random: UIColor {
+        return UIColor(red: .random(in: 0...1),
+                       green: .random(in: 0...1),
+                       blue: .random(in: 0...1),
+                       alpha: 1.0)
+    }
+}
 #endif
 
 
@@ -126,20 +147,67 @@ final class TermPlotTests: XCTestCase {
 
     }
     
-    func testText() {
-        if let data = try? Data(contentsOf: URL(string: "https://krugazor.eu/test.html")!),
+    func generateAttributedString(minLength: Int) -> NSAttributedString {
+        var str = Lorem.sentence
+        var length = str.count
+        
+        while length < minLength {
+            if Bool.random() { str += "\n" }
+            else { str += " " }
+            str += Lorem.paragraph
+            length = str.count
+        }
+        
+        var remaining = length
+        let result = NSMutableAttributedString(string: str)
+        while remaining > 0 {
+            let span = Int.random(in: 1...(min(remaining, 15)))
+            let style = Int.random(in: 0...2) // 0 - default, 1 - bold, 2 - italic
+            
+            #if os(macOS)
+            let fontDesc = NSFontDescriptor(fontAttributes: [NSFontDescriptor.AttributeName.traits : [style == 2 ? NSFontDescriptor.SymbolicTraits.italic : NSFontDescriptor.SymbolicTraits.bold]])
+            let font : NSFont = style > 0 ? NSFont(descriptor: fontDesc, size: NSFont.systemFontSize)! : NSFont.systemFont(ofSize: NSFont.systemFontSize)
+            result.addAttributes([
+                NSAttributedString.Key("NSColor"): NSColor.random,
+                NSAttributedString.Key("NSFont"): font
+            ], range: NSRange(location: length-remaining, length: span))
+            #elseif os(iOS)
+            
+            #endif
+            remaining -= span
+        }
+        
+        return result
+    }
+    
+    func testWebText() {
+        if let data = try? Data(contentsOf: URL(string: "https://blog.krugazor.eu/2018/08/31/we-suck-as-an-industry/")!),
            let html = NSAttributedString(html: data,
-                                         baseURL: URL(string: "https://krugazor.eu/test.html")!,
+                                         baseURL: URL(string: "https://blog.krugazor.eu/2018/08/31/we-suck-as-an-industry/")!,
                                          documentAttributes: nil) {
             let lines = underestimatedLines(mapAttributes(html))
             XCTAssert(lines > 0)
             
             let buffer = fit(mapAttributes(html), in: 80, lines: 47)
             XCTAssert(buffer.count > 0)
-            debugPrint(buffer)
+            debugTermPrint(buffer)
         } else {
             XCTFail()
         }
+    }
+    
+    func testText() {
+        let str = generateAttributedString(minLength: 8000)
+        let lines = underestimatedLines(mapAttributes(str))
+        XCTAssert(lines > 0)
+        
+        let splitted = toLines(mapAttributes(str), in: 80)
+        XCTAssert(splitted.count > 0)
+        
+        let buffer = fit(mapAttributes(str), in: 80, lines: 47)
+        XCTAssert(buffer.count > 0)
+        debugTermPrint(buffer)
+        
     }
     
     static var allTests = [

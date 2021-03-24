@@ -19,7 +19,8 @@ let package = Package(
             targets: ["TermPlot"]),
     ],
     dependencies: [
-         .package(name: "swift-argument-parser", url: "https://github.com/apple/swift-argument-parser", from: "0.3.0"),
+        .package(name: "swift-argument-parser", url: "https://github.com/apple/swift-argument-parser", from: "0.3.0"),
+        .package(url: "https://github.com/lukaskubanek/LoremSwiftum.git", from: "2.2.1"),
     ],
     targets: [
         .target(
@@ -31,6 +32,6 @@ let package = Package(
             dependencies: ["TermPlot", .product(name: "ArgumentParser", package: "swift-argument-parser")]),
         .testTarget(
             name: "TermPlotTests",
-            dependencies: ["TermPlot"]),
+            dependencies: ["TermPlot", "LoremSwiftum"]),
     ]
 )
