@@ -11,6 +11,9 @@ let colorMappings = TermColor.allCases.map({ ($0, $0.asRGB) })
 func approximateColor(_ col: NSColor?) -> TermColor {
     guard let col = col else { return .default }
     if let rgb = col.usingColorSpace(NSColorSpace.deviceRGB) {
+        if rgb.alphaComponent <= 0.5 {
+            return .default // because of html
+        }
         let r : Float = Float(rgb.redComponent)
         let g : Float  = Float(rgb.greenComponent)
         let b : Float  = Float(rgb.blueComponent)
@@ -51,6 +54,9 @@ func approximateColor(_ col: UIColor?) -> TermColor {
     var aa : CGFloat = -1
     
     col.getRed(&rr, green: &gg, blue: &bb, alpha: &aa)
+    if aa <= 0.5 {
+        return .default // because of html
+    }
     
     // ugly but I don't see an alternative
     if rr < 0 || gg < 0 || bb < 0 { return .default }

@@ -9,8 +9,6 @@ let package = Package(
         .macOS(.v10_12),
         // ok, but why would you?
         .iOS(.v10),
-        .tvOS(.v10),
-        .watchOS(.v3)
     ],
     products: [
         .executable(name: "term-plot", targets: ["TermPlotExe"]),

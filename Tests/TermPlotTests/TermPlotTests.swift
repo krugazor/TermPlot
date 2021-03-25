@@ -37,7 +37,7 @@ final class TermPlotTests: XCTestCase {
             }
         }
     }
-
+    
     func testCharacters() {
         for s in DisplayStyle.allCases {
             for c in DisplaySymbol.allCases {
@@ -45,7 +45,7 @@ final class TermPlotTests: XCTestCase {
             }
         }
     }
-
+    
     func testUtils() {
         print("This test is highly unreliable...")
         #if os(macOS)
@@ -85,7 +85,7 @@ final class TermPlotTests: XCTestCase {
         }
         TermHandler.shared.set(TermColor.default, style: .default)
         TermHandler.shared.put(s: "\n")
-
+        
         print("testing up")
         TermHandler.shared.set(TermColor.red, styles: [.swap, .hide])
         for _ in 0..<10 {
@@ -96,7 +96,7 @@ final class TermPlotTests: XCTestCase {
         for _ in 0..<5 {
             TermHandler.shared.put(s: "@@@@@@@@@@\n")
         }
-
+        
         TermHandler.shared.set(TermColor.default, style: .default)
         TermHandler.shared.put(s: "\n")
         
@@ -111,14 +111,14 @@ final class TermPlotTests: XCTestCase {
         for _ in 0..<5 {
             TermHandler.shared.put(s: "@@@@@@@@@@\n")
         }
-
+        
         TermHandler.shared.set(TermColor.default, style: .default)
         TermHandler.shared.put(s: "\n")
     }
     func testMapping() {
         let measures : [(Double,Double)] = [(1.0,5.0), (2.66,8), (4.5,5), (6.33, 6), (8,10)]
         let ticks : [Double] = [1,2,3,4,5,6,7,8]
-         let mapping = TimeSeriesWindow.mapDomains(measures, to: ticks)
+        let mapping = TimeSeriesWindow.mapDomains(measures, to: ticks)
         print(mapping)
     }
     
@@ -131,7 +131,7 @@ final class TermPlotTests: XCTestCase {
             return Double(random)
         }
         series1.seriesColor = .monochrome(.light_cyan)
-
+        
         var v2 = 1
         let series2 = TimeSeriesWindow(tick: 0.25, total: 8) {
             v2 += 1
@@ -140,11 +140,11 @@ final class TermPlotTests: XCTestCase {
             return Double(random)
         }
         series2.seriesColor = .monochrome(.light_cyan)
-
+        
         guard let multi = try? TermMultiWindow(stack: .vertical, ratios: [0.5,0.5], series1,series2) else { XCTFail() ; return }
         multi.start()
         RunLoop.current.run(until: Date(timeIntervalSinceNow: 60))
-
+        
     }
     
     func generateAttributedString(minLength: Int) -> NSAttributedString {
@@ -172,7 +172,12 @@ final class TermPlotTests: XCTestCase {
                 NSAttributedString.Key("NSFont"): font
             ], range: NSRange(location: length-remaining, length: span))
             #elseif os(iOS)
-            
+            let font = style == 2 ? UIFont.italicSystemFont(ofSize: UIFont.systemFontSize) :
+                (style == 1 ? UIFont.boldSystemFont(ofSize: UIFont.systemFontSize) : UIFont.systemFont(ofSize: UIFont.systemFontSize))
+            result.addAttributes([
+                NSAttributedString.Key("NSColor"): UIColor.random,
+                NSAttributedString.Key("NSFont"): font
+            ], range: NSRange(location: length-remaining, length: span))
             #endif
             remaining -= span
         }
@@ -180,11 +185,13 @@ final class TermPlotTests: XCTestCase {
         return result
     }
     
+    #if os(macOS)
     func testWebText() {
         if let data = try? Data(contentsOf: URL(string: "https://blog.krugazor.eu/2018/08/31/we-suck-as-an-industry/")!),
            let html = NSAttributedString(html: data,
                                          baseURL: URL(string: "https://blog.krugazor.eu/2018/08/31/we-suck-as-an-industry/")!,
-                                         documentAttributes: nil) {
+                                         documentAttributes: nil)
+        {
             let lines = underestimatedLines(mapAttributes(html))
             XCTAssert(lines > 0)
             
@@ -195,6 +202,29 @@ final class TermPlotTests: XCTestCase {
             XCTFail()
         }
     }
+    #elseif os(iOS)
+    func testWebText() {
+        do {
+            let data = try Data(contentsOf: URL(string: "https://blog.krugazor.eu/2018/08/31/we-suck-as-an-industry/")!)
+            let html = try NSAttributedString(data: data,
+                                         options: [.documentType: NSAttributedString.DocumentType.html,
+                                                   .defaultAttributes: [
+                                                    NSAttributedString.Key("NSColor") : UIColor.clear
+                                                   ]
+                                         ],
+                                         documentAttributes: nil)
+            let lines = underestimatedLines(mapAttributes(html))
+            XCTAssert(lines > 0)
+            
+            let buffer = fit(mapAttributes(html), in: 80, lines: 47)
+            XCTAssert(buffer.count > 0)
+            debugTermPrint(buffer)
+        } catch {
+            XCTFail(error.localizedDescription)
+        }
+    }
+
+    #endif
     
     func testText() {
         let str = generateAttributedString(minLength: 8000)
