@@ -212,9 +212,13 @@ public class TermHandler {
     }
     
     /// Locks the v-blank
-    public func lock() { screenLock.lock() }
+    public func lock() {
+        screenLock.lock()
+    }
     /// Unlocks the v-blank
-    public func unlock() {screenLock.unlock() }
+    public func unlock() {
+        screenLock.unlock()
+    }
 }
 
 // For debug purposes

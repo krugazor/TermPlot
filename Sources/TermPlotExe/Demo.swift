@@ -181,15 +181,7 @@ func doMultiDemo() {
     series1.boxStyle = .simple
 
     var v2 = 1
-    let series2 = TimeSeriesWindow(tick: 0.25, total: 8) {
-        v2 += 1
-        v2 = v2 % 5
-        let random = Int.random(in: 0...v2)
-        return Double(random)
-    }
-    series2.seriesColor = .monochrome(.light_red)
-    series2.boxStyle = .ticked
-    series2.seriesStyle = .line
+    let series2 = TextWindow()
 
     var v3 = 1
     let series3 = TimeSeriesWindow(tick: 0.25, total: 8) {
@@ -222,8 +214,13 @@ func doMultiDemo() {
         return
     }
     multi.start()
-    RunLoop.current.run(until: Date.distantFuture)
+    let timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { (ttt) in
+        let str = generateAttributedString(minLength: 100)
+        series2.add(str)
+    }
 
+    RunLoop.current.run(until: Date.distantFuture)
+    timer.invalidate()
 }
 
 func doStyles() {

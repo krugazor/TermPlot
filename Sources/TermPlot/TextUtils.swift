@@ -107,6 +107,8 @@ public func mapAttributes(_ text: NSAttributedString) -> [(TermColor,TermStyle,S
             tcol = approximateColor(scolor as? NSColor)
             #elseif os(iOS)
             tcol = approximateColor(scolor as? UIColor)
+            #elseif os(Linux)
+            tcol = scolor as? TermColor ?? .default
             #endif
         } else {
             tcol = .default
@@ -130,6 +132,8 @@ public func mapAttributes(_ text: NSAttributedString) -> [(TermColor,TermStyle,S
             } else {
                 tstyle = .default
             }
+            #elseif os(Linux)
+            tstyle = sfont as? TermStyle ?? .default
             #endif
         } else {
             tstyle = .default
@@ -313,6 +317,13 @@ public func generateAttributedString(minLength: Int) -> NSAttributedString {
             NSAttributedString.Key("NSColor"): UIColor.random,
             NSAttributedString.Key("NSFont"): font
         ], range: NSRange(location: length-remaining, length: span))
+        #elseif os(Linux)
+        let font = style == 2 ? TermStyle.italic : (style == 1 ? TermStyle.bold : TermStyle.default)
+        let color = TermColor.allCases.randomElement() ?? .default
+        result.addAttributes([
+            NSAttributedString.Key("NSColor"): color,
+            NSAttributedString.Key("NSFont"): font
+        ], range: NSRange(location: length-remaining, length: span))
         #endif
         remaining -= span
     }
@@ -329,3 +340,29 @@ public func debugTermPrint(_ buf: [[TermCharacter]]) {
     }
     print("------------------")
 }
+
+
+#if os(Linux)
+extension NSAttributedString {
+    public convenience init(_ string: String, color: TermColor, style: TermStyle) {
+        self.init(string: string, attributes: [
+            NSAttributedString.Key("NSColor"): color,
+            NSAttributedString.Key("NSFont"): style
+        ])
+    }
+}
+
+extension NSMutableAttributedString {
+    public func addAttributes(color: TermColor?, style: TermStyle?, range: NSRange) {
+        var attrs : [NSAttributedString.Key : Any] = [:]
+        if let color = color {
+            attrs[NSAttributedString.Key("NSColor")] = color
+        }
+        if let style = style {
+            attrs[NSAttributedString.Key("NSFont")] = style
+        }
+        
+        self.addAttributes(attrs, range: range)
+    }
+}
+#endif

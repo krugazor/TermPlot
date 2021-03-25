@@ -200,6 +200,7 @@ public class TermWindow {
                 }
  
                 stdout("exiting\n".apply(.default, styles: [.default]))
+                TermHandler.shared.unlock()
                 then()
             }
         }

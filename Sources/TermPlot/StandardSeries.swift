@@ -58,6 +58,7 @@ public class StandardSeriesWindow : TermWindow {
     
     /// Recompute row styles
     func computeRowStyles() {
+        TermHandler.shared.lock()
         rowStyles = [(color: TermColor, styles:[TermStyle])](repeating: (.default, [.default]), count: rows-2)
         
         // precompute quartiles if necessary
@@ -123,6 +124,7 @@ public class StandardSeriesWindow : TermWindow {
         // cheat because of the border/noborder dichotomy: triplicate the last value
         let last = rowStyles.last!
         rowStyles += [last,last]
+        TermHandler.shared.unlock()
     }
     
     /// Public initializer

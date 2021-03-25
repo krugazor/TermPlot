@@ -4,7 +4,7 @@ import Foundation
 public class TextWindow : TermWindow {
     /// Text buffer
     /// TODO: trim string above a certain size
-    var textBuffer : NSMutableAttributedString = NSMutableAttributedString()
+    var textBuffer : NSMutableAttributedString = NSMutableAttributedString(string: "")
     
     /// Current box style
     public var boxStyle : TermBoxType = .simple
