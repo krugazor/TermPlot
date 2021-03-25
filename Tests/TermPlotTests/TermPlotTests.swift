@@ -8,27 +8,6 @@ import AppKit
 import UIKit
 #endif
 
-#if os(macOS)
-extension NSColor {
-    static var random: NSColor {
-        return NSColor(red: .random(in: 0...1),
-                       green: .random(in: 0...1),
-                       blue: .random(in: 0...1),
-                       alpha: 1.0)
-    }
-}
-#elseif os(iOS)
-extension UIColor {
-    static var random: UIColor {
-        return UIColor(red: .random(in: 0...1),
-                       green: .random(in: 0...1),
-                       blue: .random(in: 0...1),
-                       alpha: 1.0)
-    }
-}
-#endif
-
-
 final class TermPlotTests: XCTestCase {
     func testColors() {
         for s in TermStyle.allCases {
@@ -146,45 +125,7 @@ final class TermPlotTests: XCTestCase {
         RunLoop.current.run(until: Date(timeIntervalSinceNow: 60))
         
     }
-    
-    func generateAttributedString(minLength: Int) -> NSAttributedString {
-        var str = Lorem.sentence
-        var length = str.count
         
-        while length < minLength {
-            if Bool.random() { str += "\n" }
-            else { str += " " }
-            str += Lorem.paragraph
-            length = str.count
-        }
-        
-        var remaining = length
-        let result = NSMutableAttributedString(string: str)
-        while remaining > 0 {
-            let span = Int.random(in: 1...(min(remaining, 15)))
-            let style = Int.random(in: 0...2) // 0 - default, 1 - bold, 2 - italic
-            
-            #if os(macOS)
-            let fontDesc = NSFontDescriptor(fontAttributes: [NSFontDescriptor.AttributeName.traits : [style == 2 ? NSFontDescriptor.SymbolicTraits.italic : NSFontDescriptor.SymbolicTraits.bold]])
-            let font : NSFont = style > 0 ? NSFont(descriptor: fontDesc, size: NSFont.systemFontSize)! : NSFont.systemFont(ofSize: NSFont.systemFontSize)
-            result.addAttributes([
-                NSAttributedString.Key("NSColor"): NSColor.random,
-                NSAttributedString.Key("NSFont"): font
-            ], range: NSRange(location: length-remaining, length: span))
-            #elseif os(iOS)
-            let font = style == 2 ? UIFont.italicSystemFont(ofSize: UIFont.systemFontSize) :
-                (style == 1 ? UIFont.boldSystemFont(ofSize: UIFont.systemFontSize) : UIFont.systemFont(ofSize: UIFont.systemFontSize))
-            result.addAttributes([
-                NSAttributedString.Key("NSColor"): UIColor.random,
-                NSAttributedString.Key("NSFont"): font
-            ], range: NSRange(location: length-remaining, length: span))
-            #endif
-            remaining -= span
-        }
-        
-        return result
-    }
-    
     #if os(macOS)
     func testWebText() {
         if let data = try? Data(contentsOf: URL(string: "https://blog.krugazor.eu/2018/08/31/we-suck-as-an-industry/")!),
@@ -198,6 +139,11 @@ final class TermPlotTests: XCTestCase {
             let buffer = fit(mapAttributes(html), in: 80, lines: 47)
             XCTAssert(buffer.count > 0)
             debugTermPrint(buffer)
+            
+            let txtW = TextWindow()
+            txtW.add(html)
+            RunLoop.current.run(until: Date(timeIntervalSinceNow: 10))
+
         } else {
             XCTFail()
         }
@@ -219,6 +165,8 @@ final class TermPlotTests: XCTestCase {
             let buffer = fit(mapAttributes(html), in: 80, lines: 47)
             XCTAssert(buffer.count > 0)
             debugTermPrint(buffer)
+            
+            
         } catch {
             XCTFail(error.localizedDescription)
         }
@@ -238,6 +186,13 @@ final class TermPlotTests: XCTestCase {
         XCTAssert(buffer.count > 0)
         debugTermPrint(buffer)
         
+        
+        let txtW = TextWindow()
+        txtW.add(str)
+        txtW.newline()
+        txtW.add(Lorem.sentence)
+        RunLoop.current.run(until: Date(timeIntervalSinceNow: 10))
+
     }
     
     static var allTests = [

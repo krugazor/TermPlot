@@ -189,6 +189,14 @@ public class TermHandler {
         stdout(s.apply(color, style: style))
     }
     
+    /// variant of (out)put with an specific style
+    /// - Parameter s: the text to output
+    /// - Parameter color: the color to use
+    /// - Parameter styles: the styles to use
+    public func put(s: String, color: TermColor, styles: [TermStyle]) {
+        stdout(s.apply(color, styles: styles))
+    }
+    
     /// changes the style for the next output
     /// - Parameter color: the color to use
     /// - Parameter style: the style to use

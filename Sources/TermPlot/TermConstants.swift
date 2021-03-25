@@ -88,7 +88,7 @@ public extension String {
     /// - Returns: a string ready to be output in an ANSI terminal
     func apply(_ color: TermColor, styles: [TermStyle] = [.default]) -> String {
         let stylesStr = styles.map { "\u{001B}[\($0.rawValue)m" }.joined()
-        return "\u{001B}[\(color.rawValue + 30)m" + stylesStr + self
+        return stylesStr + "\u{001B}[\(color.rawValue + 30)m" + self
     }
 }
 

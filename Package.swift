@@ -23,13 +23,13 @@ let package = Package(
     targets: [
         .target(
             name: "TermPlot",
-            dependencies: []
+            dependencies: ["LoremSwiftum"]
         ),
         .target(
             name: "TermPlotExe",
             dependencies: ["TermPlot", .product(name: "ArgumentParser", package: "swift-argument-parser")]),
         .testTarget(
             name: "TermPlotTests",
-            dependencies: ["TermPlot", "LoremSwiftum"]),
+            dependencies: ["TermPlot"]),
     ]
 )

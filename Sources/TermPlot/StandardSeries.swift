@@ -18,16 +18,6 @@ public class StandardSeriesWindow : TermWindow {
         case quartiles(TermColor,TermColor,TermColor,TermColor)
     }
 
-    /// Box styles for public consumption
-    /// - none empty border
-    /// - simple dashes and pipes (simple line)
-    /// - ticked (will do its best to add meaningful tick marks)
-    public enum StandardSeriesBoxType {
-        case none
-        case simple
-        case ticked
-    }
-    
     /// x-axis range size
     var totalTime : TimeInterval
     /// x-axis tick mark
@@ -52,7 +42,7 @@ public class StandardSeriesWindow : TermWindow {
     }
 
     /// Current box style
-    public var boxStyle : StandardSeriesBoxType = .simple
+    public var boxStyle : TermBoxType = .simple
     
     /// The actual y values
     var values : [Double]

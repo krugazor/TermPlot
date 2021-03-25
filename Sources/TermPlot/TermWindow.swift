@@ -61,6 +61,16 @@ public class TermWindow {
     /// remnants from earlier experiments about lessening the number of redraws
     fileprivate var cursorPosition : (x: Int, y: Int) = (0,0)
     
+    /// Box styles for public consumption
+    /// - none empty border
+    /// - simple dashes and pipes (simple line)
+    /// - ticked (will do its best to add meaningful tick marks)
+    public enum TermBoxType {
+        case none
+        case simple
+        case ticked
+    }
+    
     /// unique ID to make sure we're talking about the same windows
     let wid = UUID()
     
@@ -325,8 +335,9 @@ public class TermWindow {
         for row in buffer {
             for char in row {
                 if !clearSkip || char.char != " " {
-                    TermHandler.shared.set(char.color, styles: char.styles)
-                    stdout(String(char.char))
+//                    TermHandler.shared.set(char.color, styles: char.styles)
+//                    stdout(String(char.char))
+                    TermHandler.shared.put(s: String(char.char), color: char.color, styles: char.styles)
                 } else {
                     TermHandler.shared.moveCursorRight(1)
                 }
