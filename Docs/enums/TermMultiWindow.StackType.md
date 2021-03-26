@@ -2,6 +2,12 @@
 
 # `TermMultiWindow.StackType`
 
+**Contents**
+
+- [Cases](#cases)
+  - `horizontal`
+  - `vertical`
+
 ```swift
 public enum StackType
 ```

@@ -2,6 +2,27 @@
 
 # `DisplaySymbol`
 
+**Contents**
+
+- [Cases](#cases)
+  - `empty`
+  - `point`
+  - `vert_left`
+  - `vert_right`
+  - `horz_top`
+  - `horz_bot`
+  - `bot_left`
+  - `top_right`
+  - `top_left`
+  - `bot_right`
+  - `tick_right`
+  - `tick_left`
+  - `tick_up`
+  - `tick_down`
+- [Methods](#methods)
+  - `withStyle(_:)`
+  - `cWithStyle(_:)`
+
 ```swift
 public enum DisplaySymbol : String, CaseIterable
 ```
@@ -94,7 +115,7 @@ case tick_down
 ```
 
 ## Methods
-### `withStyle(_:)`
+<details><summary markdown="span"><code>withStyle(_:)</code></summary>
 
 ```swift
 public func withStyle(_ s: DisplayStyle) -> String
@@ -110,7 +131,9 @@ Adapts the symbol to a style, and generates a string ready for output
 | ---- | ----------- |
 | s | the style to use |
 
-### `cWithStyle(_:)`
+</details>
+
+<details><summary markdown="span"><code>cWithStyle(_:)</code></summary>
 
 ```swift
 public func cWithStyle(_ s: DisplayStyle) -> Character
@@ -125,3 +148,5 @@ Adapts the symbol to a style, and generates a character ready for output
 | Name | Description |
 | ---- | ----------- |
 | s | the style to use |
+
+</details>

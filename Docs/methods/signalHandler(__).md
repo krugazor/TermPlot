@@ -1,4 +1,4 @@
-### `signalHandler(_:)`
+<details><summary markdown="span"><code>signalHandler(_:)</code></summary>
 
 ```swift
 fileprivate func signalHandler(_ sig: Int32)
@@ -12,3 +12,5 @@ Function called by the signal handler
 | Name | Description |
 | ---- | ----------- |
 | sig | the incoming signal |
+
+</details>

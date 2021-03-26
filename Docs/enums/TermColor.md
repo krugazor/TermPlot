@@ -2,6 +2,29 @@
 
 # `TermColor`
 
+**Contents**
+
+- [Cases](#cases)
+  - `black`
+  - `light_black`
+  - `red`
+  - `light_red`
+  - `green`
+  - `light_green`
+  - `yellow`
+  - `light_yellow`
+  - `blue`
+  - `light_blue`
+  - `magenta`
+  - `light_magenta`
+  - `cyan`
+  - `light_cyan`
+  - `white`
+  - `light_white`
+  - `default`
+- [Properties](#properties)
+  - `asRGB`
+
 ```swift
 public enum TermColor : Int, CaseIterable
 ```
@@ -110,3 +133,12 @@ case light_white = 67
 ```swift
 case `default` = 9
 ```
+
+## Properties
+<details><summary markdown="span"><code>asRGB</code></summary>
+
+```swift
+var asRGB : (r: Float, g: Float, b: Float)?
+```
+
+</details>

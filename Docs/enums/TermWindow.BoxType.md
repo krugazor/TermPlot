@@ -2,6 +2,13 @@
 
 # `TermWindow.BoxType`
 
+**Contents**
+
+- [Cases](#cases)
+  - `none`
+  - `simple`
+  - `ticked(_:_:)`
+
 ```swift
 public enum BoxType
 ```

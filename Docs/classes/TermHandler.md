@@ -2,6 +2,32 @@
 
 # `TermHandler`
 
+**Contents**
+
+- [Properties](#properties)
+  - `cols`
+  - `rows`
+  - `windowResizedAction`
+  - `screenLock`
+  - `_instance`
+  - `shared`
+- [Methods](#methods)
+  - `init()`
+  - `trap(signal:action:)`
+  - `moveCursorNewline()`
+  - `moveCursorRight(_:)`
+  - `moveCursorLeft(_:)`
+  - `moveCursorDown(_:)`
+  - `moveCursorUp(_:)`
+  - `moveCursor(toX:y:)`
+  - `put(s:)`
+  - `put(s:color:style:)`
+  - `put(s:color:styles:)`
+  - `set(_:style:)`
+  - `set(_:styles:)`
+  - `lock()`
+  - `unlock()`
+
 ```swift
 public class TermHandler
 ```
@@ -9,7 +35,7 @@ public class TermHandler
 Low level class used to handle everything ANSI
 
 ## Properties
-### `cols`
+<details><summary markdown="span"><code>cols</code></summary>
 
 ```swift
 public fileprivate(set) var cols  = 80
@@ -17,7 +43,9 @@ public fileprivate(set) var cols  = 80
 
 columns in the current instance
 
-### `rows`
+</details>
+
+<details><summary markdown="span"><code>rows</code></summary>
 
 ```swift
 public fileprivate(set) var rows = 43
@@ -25,7 +53,9 @@ public fileprivate(set) var rows = 43
 
 lines in the current instance
 
-### `windowResizedAction`
+</details>
+
+<details><summary markdown="span"><code>windowResizedAction</code></summary>
 
 ```swift
 var windowResizedAction : ((TermHandler)->Void)?
@@ -34,7 +64,9 @@ var windowResizedAction : ((TermHandler)->Void)?
 block to call in the event of window resizing
 not the most elegant, but I cannot have labels on the arguments
 
-### `screenLock`
+</details>
+
+<details><summary markdown="span"><code>screenLock</code></summary>
 
 ```swift
 var screenLock = NSLock()
@@ -42,7 +74,9 @@ var screenLock = NSLock()
 
 the "v-sync" lock
 
-### `_instance`
+</details>
+
+<details><summary markdown="span"><code>_instance</code></summary>
 
 ```swift
 static var _instance : TermHandler?
@@ -50,7 +84,9 @@ static var _instance : TermHandler?
 
 private singleton instance
 
-### `shared`
+</details>
+
+<details><summary markdown="span"><code>shared</code></summary>
 
 ```swift
 static public var shared : TermHandler
@@ -58,8 +94,10 @@ static public var shared : TermHandler
 
 public shared singleton
 
+</details>
+
 ## Methods
-### `init()`
+<details><summary markdown="span"><code>init()</code></summary>
 
 ```swift
 init()
@@ -67,7 +105,9 @@ init()
 
 private-ish initializer for the singleton
 
-### `trap(signal:action:)`
+</details>
+
+<details><summary markdown="span"><code>trap(signal:action:)</code></summary>
 
 ```swift
 public class func trap(signal: Int32, action: @escaping SigActionHandler)
@@ -79,7 +119,26 @@ Trap an operating system signal.
        - signal:    The signal to catch.
        - action:    The action handler.
 
-### `moveCursorRight(_:)`
+</details>
+
+<details><summary markdown="span"><code>moveCursorNewline()</code></summary>
+
+```swift
+public func moveCursorNewline()
+```
+
+Moves the cursor down and to the beginning of the line (may not be supported)
+- Parameter amount: the delta
+
+#### Parameters
+
+| Name | Description |
+| ---- | ----------- |
+| amount | the delta |
+
+</details>
+
+<details><summary markdown="span"><code>moveCursorRight(_:)</code></summary>
 
 ```swift
 public func moveCursorRight(_ amount: Int)
@@ -94,7 +153,9 @@ Moves the cursor right by a certain amount
 | ---- | ----------- |
 | amount | the delta |
 
-### `moveCursorLeft(_:)`
+</details>
+
+<details><summary markdown="span"><code>moveCursorLeft(_:)</code></summary>
 
 ```swift
 public func moveCursorLeft(_ amount: Int)
@@ -109,7 +170,9 @@ Moves the cursor left by a certain amount
 | ---- | ----------- |
 | amount | the delta |
 
-### `moveCursorDown(_:)`
+</details>
+
+<details><summary markdown="span"><code>moveCursorDown(_:)</code></summary>
 
 ```swift
 public func moveCursorDown(_ amount: Int)
@@ -124,7 +187,9 @@ Moves the cursor down by a certain amount
 | ---- | ----------- |
 | amount | the delta |
 
-### `moveCursorUp(_:)`
+</details>
+
+<details><summary markdown="span"><code>moveCursorUp(_:)</code></summary>
 
 ```swift
 public func moveCursorUp(_ amount: Int)
@@ -139,7 +204,9 @@ Moves the cursor up by a certain amount
 | ---- | ----------- |
 | amount | the delta |
 
-### `moveCursor(toX:y:)`
+</details>
+
+<details><summary markdown="span"><code>moveCursor(toX:y:)</code></summary>
 
 ```swift
 public func moveCursor(toX: Int, y: Int)
@@ -157,7 +224,9 @@ Moves the cursor to specific coordinates. Warning! 1-based
 | toX | x position |
 | y | y position |
 
-### `put(s:)`
+</details>
+
+<details><summary markdown="span"><code>put(s:)</code></summary>
 
 ```swift
 public func put(s: String)
@@ -172,7 +241,9 @@ variant of (out)put with an agnostic string
 | ---- | ----------- |
 | s | the text to output |
 
-### `put(s:color:style:)`
+</details>
+
+<details><summary markdown="span"><code>put(s:color:style:)</code></summary>
 
 ```swift
 public func put(s: String, color: TermColor, style: TermStyle)
@@ -191,7 +262,30 @@ variant of (out)put with an specific style
 | color | the color to use |
 | style | the style to use |
 
-### `set(_:style:)`
+</details>
+
+<details><summary markdown="span"><code>put(s:color:styles:)</code></summary>
+
+```swift
+public func put(s: String, color: TermColor, styles: [TermStyle])
+```
+
+variant of (out)put with an specific style
+- Parameter s: the text to output
+- Parameter color: the color to use
+- Parameter styles: the styles to use
+
+#### Parameters
+
+| Name | Description |
+| ---- | ----------- |
+| s | the text to output |
+| color | the color to use |
+| styles | the styles to use |
+
+</details>
+
+<details><summary markdown="span"><code>set(_:style:)</code></summary>
 
 ```swift
 public func set(_ color: TermColor, style: TermStyle)
@@ -208,7 +302,9 @@ changes the style for the next output
 | color | the color to use |
 | style | the style to use |
 
-### `set(_:styles:)`
+</details>
+
+<details><summary markdown="span"><code>set(_:styles:)</code></summary>
 
 ```swift
 public func set(_ color: TermColor, styles: [TermStyle])
@@ -225,7 +321,9 @@ changes the style for the next output
 | color | the color to use |
 | style | the set of styles to use |
 
-### `lock()`
+</details>
+
+<details><summary markdown="span"><code>lock()</code></summary>
 
 ```swift
 public func lock()
@@ -233,10 +331,14 @@ public func lock()
 
 Locks the v-blank
 
-### `unlock()`
+</details>
+
+<details><summary markdown="span"><code>unlock()</code></summary>
 
 ```swift
 public func unlock()
 ```
 
 Unlocks the v-blank
+
+</details>

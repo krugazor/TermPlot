@@ -29,23 +29,26 @@ When I looked around to see if something similar existed for swift I came across
 OVERVIEW: Utility to plot graphs in a terminal window. Uses ANSI colors and UTF-8 display characters.
 If no color scheme or style is configured, will use line/light_red as a default
 List of available colors:
-black, light_black, red, light_red, green, light_green, yellow, light_yellow, blue, light_blue, magenta,
-light_magenta, cyan, light_cyan, white, light_white, default
+black, light_black, red, light_red, green, light_green, yellow, light_yellow, blue, light_blue, magenta, light_magenta, cyan, light_cyan, white,
+light_white, default
 
-USAGE: term-plot [--presentation] [--demo] [--file <file>] [--m-color <m-color>] [--q-colors <q-colors>] [--p-colors <p-colors>] [--style <style>] [--live]
+USAGE: term-plot [--presentation] [--demo] [--multi] [--text] [--file <file>] [--m-color <m-color>] [--q-colors <q-colors>] [--p-colors <p-colors>] [--style <style>] [--live]
 
 OPTIONS:
-  --presentation            Runs the animation presentation 
-  --demo                    Runs the demo 
+  --presentation          Runs the animation presentation 
+  --demo                  Runs the demo 
   --multi                 Runs the multiple windows demo 
-  -f, --file <file>         The file to read from. If absent, will read from standard input 
-  -m, --m-color <m-color>   Monochrome color to use (default: light_red). Mutually exclusive with other color options 
-  -q, --q-colors <q-colors> Quarter colors to use (default: green,blue,yellow,red). Mutually exclusive with other color options 
-  -p, --p-colors <p-colors> Percent quartile colors to use (default: green,blue,yellow,red). Mutually exclusive with other color options 
-  -s, --style <style>       Style of the graph (supported values: block, dot, line) 
-  --live                    Should continue monitoring input for changes. By default, the program does not update anymore at the EOF 
-  --version                 Show the version.
-  -h, --help                Show help information.
+  --text                  Runs the text demo 
+  -f, --file <file>       The file to read from. If absent, will read from standard input 
+  -m, --m-color <m-color> Monochrome color to use (default: light_red). Mutually exclusive with other color options 
+  -q, --q-colors <q-colors>
+                          Quarter colors to use (default: green,blue,yellow,red). Mutually exclusive with other color options 
+  -p, --p-colors <p-colors>
+                          Percent quartile colors to use (default: green,blue,yellow,red). Mutually exclusive with other color options 
+  -s, --style <style>     Style of the graph (supported values: block, dot, line) 
+  --live                  Should continue monitoring input for changes. By default, the program does not update anymore at the EOF 
+  --version               Show the version.
+  -h, --help              Show help information.
 ```
 
 Most of the options are self-explanatory: 
@@ -61,7 +64,7 @@ Most of the options are self-explanatory:
   + `line`: straight up line showing the data
   + `dots`: less convincing (to me) but has its uses. A dot is put in at the correct height for each column.
   
-The `--demo`, `--multi`, and `--presentation` are non-interactive showcases, because I like whimsy.
+The `--demo`, `--multi`, `--text`, and `--presentation` are non-interactive showcases, because I like whimsy.
 
 ## The library
 
@@ -97,4 +100,9 @@ Tick-based variant there every `timeTick` seconds, a block of code is called to 
 
 ### LiveSeriesWindow
 
-Live variant where changes in the input determine the frequency at which the graph updates. Think of it as passing the responsibility of the clock to the program/process that generates the data
+Live variant where changes in the input determine the frequency at which the graph updates. Think of it as passing the responsibility of the clock to the program/process that generates the data.
+
+### TextWindow
+
+Text area that will do its best to approximate colors and styles of a `NSAttributedString` buffer.
+

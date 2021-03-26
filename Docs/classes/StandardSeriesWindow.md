@@ -2,6 +2,32 @@
 
 # `StandardSeriesWindow`
 
+**Contents**
+
+- [Properties](#properties)
+  - `totalTime`
+  - `timeTick`
+  - `timeCount`
+  - `maxValue`
+  - `seriesColor`
+  - `seriesStyle`
+  - `boxStyle`
+  - `values`
+  - `rowStyles`
+- [Methods](#methods)
+  - `rowsDidChange()`
+  - `computeRowStyles()`
+  - `init(tick:total:)`
+  - `addValue(_:)`
+  - `addValues(_:)`
+  - `replaceValues(with:)`
+  - `modifyValues(_:)`
+  - `start()`
+  - `stop()`
+  - `display()`
+  - `getLineParameters(point1:point2:)`
+  - `mapDomains(_:to:)`
+
 ```swift
 public class StandardSeriesWindow : TermWindow
 ```
@@ -9,7 +35,7 @@ public class StandardSeriesWindow : TermWindow
 Standard series display: x number of y values
 
 ## Properties
-### `totalTime`
+<details><summary markdown="span"><code>totalTime</code></summary>
 
 ```swift
 var totalTime : TimeInterval
@@ -17,7 +43,9 @@ var totalTime : TimeInterval
 
 x-axis range size
 
-### `timeTick`
+</details>
+
+<details><summary markdown="span"><code>timeTick</code></summary>
 
 ```swift
 var timeTick : TimeInterval
@@ -25,7 +53,9 @@ var timeTick : TimeInterval
 
 x-axis tick mark
 
-### `timeCount`
+</details>
+
+<details><summary markdown="span"><code>timeCount</code></summary>
 
 ```swift
 var timeCount : Int
@@ -33,7 +63,9 @@ var timeCount : Int
 
 x-axis tick count
 
-### `maxValue`
+</details>
+
+<details><summary markdown="span"><code>maxValue</code></summary>
 
 ```swift
 public var maxValue : Double?
@@ -42,7 +74,9 @@ public var maxValue : Double?
 ceiling of the graph, if necessary
 will be computed if nil
 
-### `seriesColor`
+</details>
+
+<details><summary markdown="span"><code>seriesColor</code></summary>
 
 ```swift
 public var seriesColor : StandardSeriesColorScheme = .monochrome(.red)
@@ -50,7 +84,9 @@ public var seriesColor : StandardSeriesColorScheme = .monochrome(.red)
 
 Current series color scheme
 
-### `seriesStyle`
+</details>
+
+<details><summary markdown="span"><code>seriesStyle</code></summary>
 
 ```swift
 public var seriesStyle : StandardSeriesStyle = .block
@@ -58,15 +94,19 @@ public var seriesStyle : StandardSeriesStyle = .block
 
 Current series style
 
-### `boxStyle`
+</details>
+
+<details><summary markdown="span"><code>boxStyle</code></summary>
 
 ```swift
-public var boxStyle : StandardSeriesBoxType = .simple
+public var boxStyle : TermBoxType = .simple
 ```
 
 Current box style
 
-### `values`
+</details>
+
+<details><summary markdown="span"><code>values</code></summary>
 
 ```swift
 var values : [Double]
@@ -74,7 +114,9 @@ var values : [Double]
 
 The actual y values
 
-### `rowStyles`
+</details>
+
+<details><summary markdown="span"><code>rowStyles</code></summary>
 
 ```swift
 var rowStyles : [(color: TermColor, styles:[TermStyle])]
@@ -82,8 +124,10 @@ var rowStyles : [(color: TermColor, styles:[TermStyle])]
 
 Pre-computed color/style by row (needed for quartiles most of all)
 
+</details>
+
 ## Methods
-### `rowsDidChange()`
+<details><summary markdown="span"><code>rowsDidChange()</code></summary>
 
 ```swift
 override func rowsDidChange()
@@ -91,7 +135,9 @@ override func rowsDidChange()
 
 Recompute row styles (needed for quartiles most of all) when the number of rows changes
 
-### `computeRowStyles()`
+</details>
+
+<details><summary markdown="span"><code>computeRowStyles()</code></summary>
 
 ```swift
 func computeRowStyles()
@@ -99,7 +145,9 @@ func computeRowStyles()
 
 Recompute row styles
 
-### `init(tick:total:)`
+</details>
+
+<details><summary markdown="span"><code>init(tick:total:)</code></summary>
 
 ```swift
 public init(tick: TimeInterval, total: TimeInterval)
@@ -117,7 +165,9 @@ Public initializer
 | tick | width of an x-interval |
 | total | range of the x-axis |
 
-### `addValue(_:)`
+</details>
+
+<details><summary markdown="span"><code>addValue(_:)</code></summary>
 
 ```swift
 public func addValue(_ val: Double)
@@ -132,7 +182,9 @@ Adds a value to the end of the buffer
 | ---- | ----------- |
 | val | the value |
 
-### `addValues(_:)`
+</details>
+
+<details><summary markdown="span"><code>addValues(_:)</code></summary>
 
 ```swift
 public func addValues(_ vals: [Double])
@@ -147,7 +199,9 @@ Adds values to the end of the buffer
 | ---- | ----------- |
 | vals | the values |
 
-### `replaceValues(with:)`
+</details>
+
+<details><summary markdown="span"><code>replaceValues(with:)</code></summary>
 
 ```swift
 public func replaceValues(with: [Double])
@@ -162,7 +216,9 @@ Replaces all the values in the buffer
 | ---- | ----------- |
 | with | the new values |
 
-### `modifyValues(_:)`
+</details>
+
+<details><summary markdown="span"><code>modifyValues(_:)</code></summary>
 
 ```swift
 public func modifyValues(_ apply: @escaping ([Double])->[Double])
@@ -177,7 +233,9 @@ Reserve-and-modify mechanism to replace the values in the buffer selectively
 | ---- | ----------- |
 | apply | the block to call for new values |
 
-### `start()`
+</details>
+
+<details><summary markdown="span"><code>start()</code></summary>
 
 ```swift
 public func start()
@@ -185,7 +243,9 @@ public func start()
 
 Overrided function to start displaying the graph
 
-### `stop()`
+</details>
+
+<details><summary markdown="span"><code>stop()</code></summary>
 
 ```swift
 public func stop()
@@ -193,7 +253,9 @@ public func stop()
 
 Overrided function to stop displaying the graph
 
-### `display()`
+</details>
+
+<details><summary markdown="span"><code>display()</code></summary>
 
 ```swift
 func display()
@@ -201,7 +263,9 @@ func display()
 
 Display the buffer, based on current style and colors
 
-### `getLineParameters(point1:point2:)`
+</details>
+
+<details><summary markdown="span"><code>getLineParameters(point1:point2:)</code></summary>
 
 ```swift
 static func getLineParameters(point1: (x: Double, y:Double), point2: (x: Double, y:Double)) -> (a: Double, b: Double, c: Double)
@@ -220,7 +284,9 @@ Used for interpolation, gets the function that defines the line between two poin
 | point1 | first point |
 | point2 | second point |
 
-### `mapDomains(_:to:)`
+</details>
+
+<details><summary markdown="span"><code>mapDomains(_:to:)</code></summary>
 
 ```swift
 static func mapDomains(_ points: [(x: Double, y:Double)], to: [Double]) -> [(x: Double, y:Double)]
@@ -238,3 +304,5 @@ Interpolation function
 | ---- | ----------- |
 | points | the discreet points to start from |
 | to | the discreet domain (x) to map onto |
+
+</details>
