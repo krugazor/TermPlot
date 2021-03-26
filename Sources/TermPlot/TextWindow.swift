@@ -16,6 +16,13 @@ public class TextWindow : TermWindow {
         super.init(embedIn: embedIn)
     }
     
+    /// Clears the entire text buffer
+    public func clear() {
+        textBuffer = NSMutableAttributedString(string: "")
+        textData = []
+        display()
+    }
+    
     /// Adds a new line to the buffer
     public func newline() {
         textBuffer.append(NSAttributedString(string: "\n"))
@@ -38,6 +45,21 @@ public class TextWindow : TermWindow {
         textData = mapAttributes(textBuffer)
         display()
     }
+    
+    /// Replaces the entire text buffer with the given string
+    /// - Parameter txt: the string replacing the buffer
+    public func replace(with txt: String) {
+        clear()
+        add(txt)
+    }
+    
+    /// Replaces the entire text buffer with the given string
+    /// - Parameter txt: the string replacing the buffer
+    public func replace(with txt: NSAttributedString) {
+        clear()
+        add(txt)
+    }
+    
     // MARK: -
 
     override func colsDidChange() {
