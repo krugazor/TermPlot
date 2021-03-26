@@ -20,6 +20,45 @@ public enum TermColor : Int, CaseIterable {
     case white = 7
     case light_white = 67
     case `default` = 9
+    
+    var asRGB : (r: Float, g: Float, b: Float)? {
+        switch self {
+        case .black:
+            return (0,0,0)
+        case .light_black:
+            return (0,0,0)
+        case .red:
+            return (255/255,0,0)
+        case .light_red:
+            return (194/255,54/255,33/255)
+        case .green:
+            return (0,255/255,0)
+        case .light_green:
+            return (37/255,188/255,36/255)
+        case .yellow:
+            return (255/255,255/255,0)
+        case .light_yellow:
+            return (173/255,173/255,39/255)
+        case .blue:
+            return (0,0,255/255)
+        case .light_blue:
+            return (73/255,46/255,225/255)
+        case .magenta:
+            return (255/255,0,255/255)
+        case .light_magenta:
+            return (211/255,56/255,211/255)
+        case .cyan:
+            return (0,255/255,255/255)
+        case .light_cyan:
+            return (51/255,187/255,200/255)
+        case .white:
+            return (255/255,255/255,255/255)
+        case .light_white:
+            return (203/255,204/255,205/255)
+        case .default:
+            return nil
+        }
+    }
 }
 
 /// The ANSI styles (self explanatory)
@@ -40,7 +79,7 @@ public extension String {
     ///   - style: the style to use
     /// - Returns: a string ready to be output in an ANSI terminal
     func apply(_ color: TermColor, style: TermStyle = .default) -> String {
-        return "\u{001B}[\(color.rawValue + 30)m" + "\u{001B}[\(style.rawValue)m" + self
+        return "\u{001B}[\(style.rawValue)m" + "\u{001B}[\(color.rawValue + 30)m" + self
     }
     /// Creates a string with specified color and style
     /// - Parameters:
@@ -49,7 +88,7 @@ public extension String {
     /// - Returns: a string ready to be output in an ANSI terminal
     func apply(_ color: TermColor, styles: [TermStyle] = [.default]) -> String {
         let stylesStr = styles.map { "\u{001B}[\($0.rawValue)m" }.joined()
-        return "\u{001B}[\(color.rawValue + 30)m" + stylesStr + self
+        return stylesStr + "\u{001B}[\(color.rawValue + 30)m" + self
     }
 }
 
@@ -68,6 +107,7 @@ public enum TermControl : String {
     case DOWN = "\u{001B}[B"
     case FORWARD = "\u{001B}[C"
     case BACK = "\u{001B}[D"
+    case NEWLINESTART = "\u{001B}[1E"
     case CLEARSCR = "\u{001B}[2J"
     case CLEARFROMCSR = "\u{001B}[0J"
     case CLEARLINE = "\u{001B}[2K"

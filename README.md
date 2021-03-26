@@ -6,9 +6,6 @@
 And also, but why would you:
 
 ![iOS](https://img.shields.io/badge/os-iOS-green.svg?style=flat)
-![tvOS](https://img.shields.io/badge/os-tvOS-green.svg?style=flat)
-![watchOS](https://img.shields.io/badge/os-watchOS-green.svg?style=flat)
-
 
 # TermPlot
 
