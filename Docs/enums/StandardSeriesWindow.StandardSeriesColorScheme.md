@@ -2,6 +2,13 @@
 
 # `StandardSeriesWindow.StandardSeriesColorScheme`
 
+**Contents**
+
+- [Cases](#cases)
+  - `monochrome(_:)`
+  - `quarters(_:_:_:_:)`
+  - `quartiles(_:_:_:_:)`
+
 ```swift
 public enum StandardSeriesColorScheme
 ```

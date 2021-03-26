@@ -9,8 +9,6 @@ let package = Package(
         .macOS(.v10_12),
         // ok, but why would you?
         .iOS(.v10),
-        .tvOS(.v10),
-        .watchOS(.v3)
     ],
     products: [
         .executable(name: "term-plot", targets: ["TermPlotExe"]),
@@ -19,12 +17,13 @@ let package = Package(
             targets: ["TermPlot"]),
     ],
     dependencies: [
-         .package(name: "swift-argument-parser", url: "https://github.com/apple/swift-argument-parser", from: "0.3.0"),
+        .package(name: "swift-argument-parser", url: "https://github.com/apple/swift-argument-parser", from: "0.3.0"),
+        .package(url: "https://github.com/lukaskubanek/LoremSwiftum.git", from: "2.2.1"),
     ],
     targets: [
         .target(
             name: "TermPlot",
-            dependencies: []
+            dependencies: ["LoremSwiftum"]
         ),
         .target(
             name: "TermPlotExe",

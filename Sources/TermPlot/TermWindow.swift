@@ -61,12 +61,22 @@ public class TermWindow {
     /// remnants from earlier experiments about lessening the number of redraws
     fileprivate var cursorPosition : (x: Int, y: Int) = (0,0)
     
+    /// Box styles for public consumption
+    /// - none empty border
+    /// - simple dashes and pipes (simple line)
+    /// - ticked (will do its best to add meaningful tick marks)
+    public enum TermBoxType {
+        case none
+        case simple
+        case ticked
+    }
+
     /// unique ID to make sure we're talking about the same windows
     let wid = UUID()
-    
+
     /// if a window is embedded in another
     var embeddedIn: TermWindow?
-    
+
     /// Function called when screen size changes
     func rowsDidChange() {
         // for override purposes
@@ -91,7 +101,7 @@ public class TermWindow {
             return (TermHandler.shared.rows,TermHandler.shared.cols)
         }
     }
-    
+
     /// function used to determine the width/height we should give our children windows
     /// as it mostly is for multiterms, this will likely return the size of the terminal
     /// will need to be overridden
@@ -107,11 +117,11 @@ public class TermWindow {
         }
     }
 
-    
+
     /// Default initializer
     init(embedIn: TermWindow? = nil) {
         embeddedIn = embedIn
-        
+
         if let emi = embedIn {
             (rows,cols) = emi.size(for: wid)
         } else {
@@ -190,6 +200,7 @@ public class TermWindow {
                 }
  
                 stdout("exiting\n".apply(.default, styles: [.default]))
+                TermHandler.shared.unlock()
                 then()
             }
         }
@@ -325,8 +336,9 @@ public class TermWindow {
         for row in buffer {
             for char in row {
                 if !clearSkip || char.char != " " {
-                    TermHandler.shared.set(char.color, styles: char.styles)
-                    stdout(String(char.char))
+//                    TermHandler.shared.set(char.color, styles: char.styles)
+//                    stdout(String(char.char))
+                    TermHandler.shared.put(s: String(char.char), color: char.color, styles: char.styles)
                 } else {
                     TermHandler.shared.moveCursorRight(1)
                 }
@@ -354,9 +366,9 @@ public class TermWindow {
         default:
             var buffer = [[Character]](repeating: [Character](repeating: " ", count: cols-2), count: rows-2)
             handler(&buffer)
-            
+
             boxScreen(box)
-            
+
             draw(buffer, offset: (1,1))
         }
     }
@@ -377,7 +389,7 @@ public class TermWindow {
         default:
             var buffer = [[TermCharacter]](repeating: [TermCharacter](repeating: TermCharacter(), count: cols-2), count: rows-2)
             handler(&buffer)
-            
+
             boxScreen(box)
             draw(buffer, offset: (1,1))
         }

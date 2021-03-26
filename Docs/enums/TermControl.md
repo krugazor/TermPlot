@@ -2,6 +2,20 @@
 
 # `TermControl`
 
+**Contents**
+
+- [Cases](#cases)
+  - `CR`
+  - `NEWLINE`
+  - `UP`
+  - `DOWN`
+  - `FORWARD`
+  - `BACK`
+  - `NEWLINESTART`
+  - `CLEARSCR`
+  - `CLEARFROMCSR`
+  - `CLEARLINE`
+
 ```swift
 public enum TermControl : String
 ```
@@ -43,6 +57,12 @@ case FORWARD = "\u{001B}[C"
 
 ```swift
 case BACK = "\u{001B}[D"
+```
+
+### `NEWLINESTART`
+
+```swift
+case NEWLINESTART = "\u{001B}[1E"
 ```
 
 ### `CLEARSCR`

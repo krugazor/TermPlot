@@ -1,6 +1,10 @@
 
 # Change Log (summarized)
 
+### v1.2.0
+
+- text window with support for colors and styles through `NSAttributedString`
+
 ### v1.1.0
 
 - multiple subwindow support

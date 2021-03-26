@@ -2,6 +2,13 @@
 
 # `StandardSeriesWindow.StandardSeriesStyle`
 
+**Contents**
+
+- [Cases](#cases)
+  - `block`
+  - `line`
+  - `dot`
+
 ```swift
 public enum StandardSeriesStyle : String, CaseIterable
 ```

@@ -136,27 +136,23 @@ public class TermMultiWindow : TermWindow {
     
     override func rowsDidChange() {
         DispatchQueue.global().async { [self] in
-            TermHandler.shared.lock()
             if stackType == .vertical {
                 offsets = TermMultiWindow.offsetsFromRatios(length: rows, ratios: ratios)
             }
             
             rectangleCache.removeAll()
             sizeDidChange()
-            TermHandler.shared.unlock()
         }
     }
     
     override func colsDidChange() {
         DispatchQueue.global().async { [self] in
-            TermHandler.shared.lock()
             if stackType == .horizontal {
                 offsets = TermMultiWindow.offsetsFromRatios(length: cols, ratios: ratios)
             }
             rectangleCache.removeAll()
             sizeDidChange()
-            TermHandler.shared.unlock()
-        }
+         }
     }
     
     /// rectangle cache to avoid computing it every time

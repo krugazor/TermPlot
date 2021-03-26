@@ -6,7 +6,7 @@ public extension String
 ```
 
 ## Methods
-### `apply(_:style:)`
+<details><summary markdown="span"><code>apply(_:style:)</code></summary>
 
 ```swift
 func apply(_ color: TermColor, style: TermStyle = .default) -> String
@@ -25,7 +25,9 @@ Creates a string with specified color and style
 | color | the color to use |
 | style | the style to use |
 
-### `apply(_:styles:)`
+</details>
+
+<details><summary markdown="span"><code>apply(_:styles:)</code></summary>
 
 ```swift
 func apply(_ color: TermColor, styles: [TermStyle] = [.default]) -> String
@@ -43,3 +45,15 @@ Creates a string with specified color and style
 | ---- | ----------- |
 | color | the color to use |
 | styles | the styles to use |
+
+</details>
+
+<details><summary markdown="span"><code>split(every:backwards:)</code></summary>
+
+```swift
+public func split(every: Int, backwards: Bool = false) -> [String]
+```
+
+Splits a string into groups of `every` n characters, grouping from left-to-right by default. If `backwards` is true, right-to-left.
+
+</details>

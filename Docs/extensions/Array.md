@@ -6,14 +6,18 @@ extension Array where Element == TermCharacter
 ```
 
 ## Methods
-### `debugString()`
+<details><summary markdown="span"><code>debugString()</code></summary>
 
 ```swift
 public func debugString() -> String
 ```
 
-### `debugString()`
+</details>
+
+<details><summary markdown="span"><code>debugString()</code></summary>
 
 ```swift
 public func debugString() -> String
 ```
+
+</details>

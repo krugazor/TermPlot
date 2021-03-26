@@ -128,6 +128,12 @@ public class TermHandler {
     }
     
     // MARK: utility functions
+    /// Moves the cursor down and to the beginning of the line (may not be supported)
+    /// - Parameter amount: the delta
+    public func moveCursorNewline() {
+        stdout(TermControl.NEWLINESTART.rawValue)
+    }
+    
     /// Moves the cursor right by a certain amount
     /// - Parameter amount: the delta
     public func moveCursorRight(_ amount: Int) {
@@ -135,7 +141,7 @@ public class TermHandler {
             stdout(TermControl.FORWARD.rawValue)
         }
     }
-    
+
     /// Moves the cursor left by a certain amount
     /// - Parameter amount: the delta
     public func moveCursorLeft(_ amount: Int) {
@@ -183,6 +189,14 @@ public class TermHandler {
         stdout(s.apply(color, style: style))
     }
     
+    /// variant of (out)put with an specific style
+    /// - Parameter s: the text to output
+    /// - Parameter color: the color to use
+    /// - Parameter styles: the styles to use
+    public func put(s: String, color: TermColor, styles: [TermStyle]) {
+        stdout(s.apply(color, styles: styles))
+    }
+    
     /// changes the style for the next output
     /// - Parameter color: the color to use
     /// - Parameter style: the style to use
@@ -198,9 +212,13 @@ public class TermHandler {
     }
     
     /// Locks the v-blank
-    public func lock() { screenLock.lock() }
+    public func lock() {
+        screenLock.lock()
+    }
     /// Unlocks the v-blank
-    public func unlock() {screenLock.unlock() }
+    public func unlock() {
+        screenLock.unlock()
+    }
 }
 
 // For debug purposes

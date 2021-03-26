@@ -1,5 +1,12 @@
 import XCTest
+import LoremSwiftum
 @testable import TermPlot
+
+#if os(macOS)
+import AppKit
+#elseif os(iOS)
+import UIKit
+#endif
 
 final class TermPlotTests: XCTestCase {
     func testColors() {
@@ -20,8 +27,10 @@ final class TermPlotTests: XCTestCase {
 
     func testUtils() {
         print("This test is highly unreliable...")
+        #if os(macOS)
         let (c,r) = TermSize()
         print("\(c) cols x \(r) rows")
+        #endif
         let (c2,r2) = TermSize2()
         print("\(c2) cols x \(r2) rows")
         print("10s of listening to size changes...")
@@ -88,10 +97,10 @@ final class TermPlotTests: XCTestCase {
     func testMapping() {
         let measures : [(Double,Double)] = [(1.0,5.0), (2.66,8), (4.5,5), (6.33, 6), (8,10)]
         let ticks : [Double] = [1,2,3,4,5,6,7,8]
-         let mapping = TimeSeriesWindow.mapDomains(measures, to: ticks)
+        let mapping = TimeSeriesWindow.mapDomains(measures, to: ticks)
         print(mapping)
     }
-    
+
     func testMulti() {
         var v1 = 1
         let series1 = TimeSeriesWindow(tick: 0.25, total: 8) {
@@ -114,6 +123,75 @@ final class TermPlotTests: XCTestCase {
         guard let multi = try? TermMultiWindow(stack: .vertical, ratios: [0.5,0.5], series1,series2) else { XCTFail() ; return }
         multi.start()
         RunLoop.current.run(until: Date(timeIntervalSinceNow: 60))
+
+    }
+
+    #if os(macOS)
+    func testWebText() {
+        if let data = try? Data(contentsOf: URL(string: "https://blog.krugazor.eu/2018/08/31/we-suck-as-an-industry/")!),
+           let html = NSAttributedString(html: data,
+                                         baseURL: URL(string: "https://blog.krugazor.eu/2018/08/31/we-suck-as-an-industry/")!,
+                                         documentAttributes: nil)
+        {
+            let lines = underestimatedLines(mapAttributes(html))
+            XCTAssert(lines > 0)
+
+            let buffer = fit(mapAttributes(html), in: 80, lines: 47)
+            XCTAssert(buffer.count > 0)
+            debugTermPrint(buffer)
+
+            let txtW = TextWindow()
+            txtW.add(html)
+            RunLoop.current.run(until: Date(timeIntervalSinceNow: 10))
+
+        } else {
+            XCTFail()
+        }
+    }
+    #elseif os(iOS)
+    func testWebText() {
+        do {
+            let data = try Data(contentsOf: URL(string: "https://blog.krugazor.eu/2018/08/31/we-suck-as-an-industry/")!)
+            let html = try NSAttributedString(data: data,
+                                         options: [.documentType: NSAttributedString.DocumentType.html,
+                                                   .defaultAttributes: [
+                                                    NSAttributedString.Key("NSColor") : UIColor.clear
+                                                   ]
+                                         ],
+                                         documentAttributes: nil)
+            let lines = underestimatedLines(mapAttributes(html))
+            XCTAssert(lines > 0)
+
+            let buffer = fit(mapAttributes(html), in: 80, lines: 47)
+            XCTAssert(buffer.count > 0)
+            debugTermPrint(buffer)
+
+
+        } catch {
+            XCTFail(error.localizedDescription)
+        }
+    }
+
+    #endif
+
+    func testText() {
+        let str = generateAttributedString(minLength: 8000)
+        let lines = underestimatedLines(mapAttributes(str))
+        XCTAssert(lines > 0)
+
+        let splitted = toLines(mapAttributes(str), in: 80)
+        XCTAssert(splitted.count > 0)
+
+        let buffer = fit(mapAttributes(str), in: 80, lines: 47)
+        XCTAssert(buffer.count > 0)
+        debugTermPrint(buffer)
+
+
+        let txtW = TextWindow()
+        txtW.add(str)
+        txtW.newline()
+        txtW.add(Lorem.sentence)
+        RunLoop.current.run(until: Date(timeIntervalSinceNow: 10))
 
     }
 
