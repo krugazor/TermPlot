@@ -1,9 +1,16 @@
 **ENUM**
 
-# `StandardSeriesWindow.StandardSeriesBoxType`
+# `TermWindow.TermBoxType`
+
+**Contents**
+
+- [Cases](#cases)
+  - `none`
+  - `simple`
+  - `ticked`
 
 ```swift
-public enum StandardSeriesBoxType
+public enum TermBoxType
 ```
 
 Box styles for public consumption

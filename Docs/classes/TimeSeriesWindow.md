@@ -2,6 +2,17 @@
 
 # `TimeSeriesWindow`
 
+**Contents**
+
+- [Properties](#properties)
+  - `sourceTimer`
+  - `sourceBlock`
+- [Methods](#methods)
+  - `init(tick:total:)`
+  - `init(tick:total:source:)`
+  - `start()`
+  - `stop()`
+
 ```swift
 public class TimeSeriesWindow : StandardSeriesWindow
 ```
@@ -9,7 +20,7 @@ public class TimeSeriesWindow : StandardSeriesWindow
 Series variant based ton timer ticks
 
 ## Properties
-### `sourceTimer`
+<details><summary markdown="span"><code>sourceTimer</code></summary>
 
 ```swift
 var sourceTimer : Timer?
@@ -17,7 +28,9 @@ var sourceTimer : Timer?
 
 the timer that will repeatedly call the input block
 
-### `sourceBlock`
+</details>
+
+<details><summary markdown="span"><code>sourceBlock</code></summary>
 
 ```swift
 var sourceBlock : ()->Double
@@ -25,8 +38,10 @@ var sourceBlock : ()->Double
 
 the block in charge of getting new values
 
+</details>
+
 ## Methods
-### `init(tick:total:)`
+<details><summary markdown="span"><code>init(tick:total:)</code></summary>
 
 ```swift
 public override init(tick: TimeInterval, total: TimeInterval)
@@ -44,7 +59,9 @@ Neutralized public initializer
 | tick | useless |
 | total | useless |
 
-### `init(tick:total:source:)`
+</details>
+
+<details><summary markdown="span"><code>init(tick:total:source:)</code></summary>
 
 ```swift
 public init(tick: TimeInterval, total: TimeInterval, source: @escaping ()->Double)
@@ -64,7 +81,9 @@ Public initializer
 | total | range of the x-axis |
 | source | the block to call every tick for new values |
 
-### `start()`
+</details>
+
+<details><summary markdown="span"><code>start()</code></summary>
 
 ```swift
 public override func start()
@@ -72,10 +91,14 @@ public override func start()
 
 Starts the display and tick
 
-### `stop()`
+</details>
+
+<details><summary markdown="span"><code>stop()</code></summary>
 
 ```swift
 public override func stop()
 ```
 
 Stops the tick
+
+</details>

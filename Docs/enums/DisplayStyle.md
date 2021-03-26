@@ -2,6 +2,16 @@
 
 # `DisplayStyle`
 
+**Contents**
+
+- [Cases](#cases)
+  - `line`
+  - `heavyline`
+  - `dots`
+  - `crosses`
+  - `pluses`
+  - `stars`
+
 ```swift
 public enum DisplayStyle : CaseIterable
 ```

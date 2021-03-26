@@ -2,6 +2,17 @@
 
 # `TermStyle`
 
+**Contents**
+
+- [Cases](#cases)
+  - `bold`
+  - `italic`
+  - `underline`
+  - `blink`
+  - `swap`
+  - `hide`
+  - `default`
+
 ```swift
 public enum TermStyle : Int, CaseIterable
 ```

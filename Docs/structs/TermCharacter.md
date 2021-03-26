@@ -2,6 +2,15 @@
 
 # `TermCharacter`
 
+**Contents**
+
+- [Properties](#properties)
+  - `char`
+  - `color`
+  - `styles`
+- [Methods](#methods)
+  - `init(_:color:styles:)`
+
 ```swift
 public struct TermCharacter
 ```
@@ -9,7 +18,7 @@ public struct TermCharacter
 Basic "pixel" like structure
 
 ## Properties
-### `char`
+<details><summary markdown="span"><code>char</code></summary>
 
 ```swift
 var char : Character
@@ -17,7 +26,9 @@ var char : Character
 
 the character
 
-### `color`
+</details>
+
+<details><summary markdown="span"><code>color</code></summary>
 
 ```swift
 var color : TermColor
@@ -25,7 +36,9 @@ var color : TermColor
 
 the color
 
-### `styles`
+</details>
+
+<details><summary markdown="span"><code>styles</code></summary>
 
 ```swift
 var styles : [TermStyle]
@@ -33,8 +46,10 @@ var styles : [TermStyle]
 
 the styles
 
+</details>
+
 ## Methods
-### `init(_:color:styles:)`
+<details><summary markdown="span"><code>init(_:color:styles:)</code></summary>
 
 ```swift
 public init(_ c: Character = " ", color col : TermColor = .default, styles s: [TermStyle] = [.default])
@@ -53,3 +68,5 @@ Initializer with defaults built-in
 | c | a character |
 | col | a color |
 | s | styles to use |
+
+</details>
