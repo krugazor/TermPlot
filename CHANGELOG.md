@@ -1,6 +1,10 @@
 
 # Change Log (summarized)
 
+### v1.2.1
+
+- fixed a bug causing double lines
+
 ### v1.2.0
 
 - text window with support for colors and styles through `NSAttributedString`
