@@ -210,13 +210,6 @@ public func toLines(_ txt : [(TermColor,TermStyle,String)], in width: Int) -> [(
             for _ in sub { currentStyles.append((item.0, item.1)) }
             currentLine += sub
         }
-        
-        // special case, ends with a new line
-        if item.2.last?.isNewline ?? false {
-            resultBefSplit.append((currentStyles, currentLine))
-            currentLine = ""
-            currentStyles = []
-        }
     }
     
     if currentStyles.count > 0 {
