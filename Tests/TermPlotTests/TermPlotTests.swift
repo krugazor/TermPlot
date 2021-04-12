@@ -16,7 +16,7 @@ final class TermPlotTests: XCTestCase {
             }
         }
     }
-    
+
     func testCharacters() {
         for s in DisplayStyle.allCases {
             for c in DisplaySymbol.allCases {
@@ -24,7 +24,7 @@ final class TermPlotTests: XCTestCase {
             }
         }
     }
-    
+
     func testUtils() {
         print("This test is highly unreliable...")
         #if os(macOS)
@@ -64,7 +64,7 @@ final class TermPlotTests: XCTestCase {
         }
         TermHandler.shared.set(TermColor.default, style: .default)
         TermHandler.shared.put(s: "\n")
-        
+
         print("testing up")
         TermHandler.shared.set(TermColor.red, styles: [.swap, .hide])
         for _ in 0..<10 {
@@ -75,7 +75,7 @@ final class TermPlotTests: XCTestCase {
         for _ in 0..<5 {
             TermHandler.shared.put(s: "@@@@@@@@@@\n")
         }
-        
+
         TermHandler.shared.set(TermColor.default, style: .default)
         TermHandler.shared.put(s: "\n")
         
@@ -90,7 +90,7 @@ final class TermPlotTests: XCTestCase {
         for _ in 0..<5 {
             TermHandler.shared.put(s: "@@@@@@@@@@\n")
         }
-        
+
         TermHandler.shared.set(TermColor.default, style: .default)
         TermHandler.shared.put(s: "\n")
     }
@@ -100,7 +100,7 @@ final class TermPlotTests: XCTestCase {
         let mapping = TimeSeriesWindow.mapDomains(measures, to: ticks)
         print(mapping)
     }
-    
+
     func testMulti() {
         var v1 = 1
         let series1 = TimeSeriesWindow(tick: 0.25, total: 8) {
@@ -110,7 +110,7 @@ final class TermPlotTests: XCTestCase {
             return Double(random)
         }
         series1.seriesColor = .monochrome(.light_cyan)
-        
+
         var v2 = 1
         let series2 = TimeSeriesWindow(tick: 0.25, total: 8) {
             v2 += 1
@@ -119,13 +119,13 @@ final class TermPlotTests: XCTestCase {
             return Double(random)
         }
         series2.seriesColor = .monochrome(.light_cyan)
-        
+
         guard let multi = try? TermMultiWindow(stack: .vertical, ratios: [0.5,0.5], series1,series2) else { XCTFail() ; return }
         multi.start()
         RunLoop.current.run(until: Date(timeIntervalSinceNow: 60))
-        
+
     }
-        
+
     #if os(macOS)
     func testWebText() {
         if let data = try? Data(contentsOf: URL(string: "https://blog.krugazor.eu/2018/08/31/we-suck-as-an-industry/")!),
@@ -135,11 +135,11 @@ final class TermPlotTests: XCTestCase {
         {
             let lines = underestimatedLines(mapAttributes(html))
             XCTAssert(lines > 0)
-            
+
             let buffer = fit(mapAttributes(html), in: 80, lines: 47)
             XCTAssert(buffer.count > 0)
             debugTermPrint(buffer)
-            
+
             let txtW = TextWindow()
             txtW.add(html)
             RunLoop.current.run(until: Date(timeIntervalSinceNow: 10))
@@ -161,32 +161,32 @@ final class TermPlotTests: XCTestCase {
                                          documentAttributes: nil)
             let lines = underestimatedLines(mapAttributes(html))
             XCTAssert(lines > 0)
-            
+
             let buffer = fit(mapAttributes(html), in: 80, lines: 47)
             XCTAssert(buffer.count > 0)
             debugTermPrint(buffer)
-            
-            
+
+
         } catch {
             XCTFail(error.localizedDescription)
         }
     }
 
     #endif
-    
+
     func testText() {
         let str = generateAttributedString(minLength: 8000)
         let lines = underestimatedLines(mapAttributes(str))
         XCTAssert(lines > 0)
-        
+
         let splitted = toLines(mapAttributes(str), in: 80)
         XCTAssert(splitted.count > 0)
-        
+
         let buffer = fit(mapAttributes(str), in: 80, lines: 47)
         XCTAssert(buffer.count > 0)
         debugTermPrint(buffer)
-        
-        
+
+
         let txtW = TextWindow()
         txtW.add(str)
         txtW.newline()
@@ -194,7 +194,7 @@ final class TermPlotTests: XCTestCase {
         RunLoop.current.run(until: Date(timeIntervalSinceNow: 10))
 
     }
-    
+
     static var allTests = [
         ("testColors", testColors),
         ("testCharacters", testCharacters),

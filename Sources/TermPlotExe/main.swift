@@ -60,10 +60,10 @@ struct TermPlot : ParsableCommand {
     
     @Flag(name: .long, help: "Runs the multiple windows demo")
     var multi = false
-    
+
     @Flag(name: .long, help: "Runs the text demo")
     var text = false
-    
+
     @Option(name: .shortAndLong, help: "The file to read from. If absent, will read from standard input")
     var file: String?
     

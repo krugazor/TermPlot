@@ -1,6 +1,7 @@
 import Foundation
 import TermPlot
 
+
 func fillpart1( _ buffer: inout [[TermCharacter]], _ frame: Int) {
     // text IS IT / A BIRD / ?
     let rows = buffer.count
@@ -225,7 +226,7 @@ func doMultiDemo() {
 
 func doStyles() {
     let txtW = TextWindow()
-    
+
     while true {
         let str = generateAttributedString(minLength: 100)
         txtW.add(str)

@@ -70,13 +70,13 @@ public class TermWindow {
         case simple
         case ticked
     }
-    
+
     /// unique ID to make sure we're talking about the same windows
     let wid = UUID()
-    
+
     /// if a window is embedded in another
     var embeddedIn: TermWindow?
-    
+
     /// Function called when screen size changes
     func rowsDidChange() {
         // for override purposes
@@ -101,7 +101,7 @@ public class TermWindow {
             return (TermHandler.shared.rows,TermHandler.shared.cols)
         }
     }
-    
+
     /// function used to determine the width/height we should give our children windows
     /// as it mostly is for multiterms, this will likely return the size of the terminal
     /// will need to be overridden
@@ -117,11 +117,11 @@ public class TermWindow {
         }
     }
 
-    
+
     /// Default initializer
     init(embedIn: TermWindow? = nil) {
         embeddedIn = embedIn
-        
+
         if let emi = embedIn {
             (rows,cols) = emi.size(for: wid)
         } else {
@@ -366,9 +366,9 @@ public class TermWindow {
         default:
             var buffer = [[Character]](repeating: [Character](repeating: " ", count: cols-2), count: rows-2)
             handler(&buffer)
-            
+
             boxScreen(box)
-            
+
             draw(buffer, offset: (1,1))
         }
     }
@@ -389,7 +389,7 @@ public class TermWindow {
         default:
             var buffer = [[TermCharacter]](repeating: [TermCharacter](repeating: TermCharacter(), count: cols-2), count: rows-2)
             handler(&buffer)
-            
+
             boxScreen(box)
             draw(buffer, offset: (1,1))
         }
