@@ -199,7 +199,7 @@ public class StandardSeriesWindow : TermWindow {
         if conversionFactor.isNaN || conversionFactor.isInfinite { conversionFactor = 1 }
          // map timecount items in cols bins
         var heldValues = [(x: Double, y: Double)]()
-        for x in 0..<timeCount {
+        for x in 0..<values.count {
             heldValues.append((Double(x+1)*timeTick, values[x]))
         }
         var timeCols = [Double]()

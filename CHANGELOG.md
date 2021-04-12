@@ -3,6 +3,10 @@
 
 ### v1.2.1
 
+- bugfix in an off-by-one
+
+### v1.2.1
+
 - fixed a bug causing double lines
 
 ### v1.2.0
